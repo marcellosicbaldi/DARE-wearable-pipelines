@@ -183,6 +183,7 @@ def nimbaldetach(x_values, y_values, z_values, temperature_values, accel_freq=75
 
     return start_stop_df, vert_nonwear_array
 
+# MS
 def plot_nonwear(sub_ID, acc, temp, start_stop_nw):
     plt.figure(figsize=(10, 6))
     plt.subplot(211)
