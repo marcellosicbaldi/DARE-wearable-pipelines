@@ -10,9 +10,8 @@ Functionalities across three domains:
 ```
 wearable-data-processing/
 │── sleep/                  # Sleep processing pipelines
-│   ├── preprocessing.py    # Preprocess sleep data
-│   ├── feature_extraction.py # Extract sleep-related features
-│   ├── models.py           # Sleep analysis models
+│   ├── GGIR.R              # GGIR call to process raw accelerometer data
+│   ├── .py                 # Extract sleep-related features from GGIR output
 │   ├── utils.py            # Helper functions
 │
 │── heart_rate/             # Heart rate processing pipelines
