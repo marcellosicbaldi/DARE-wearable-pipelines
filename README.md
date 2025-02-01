@@ -26,15 +26,14 @@ wearable-data-processing/
 │   ├── models.py                   # Activity classification models
 │   ├── utils.py                    # Helper functions
 │
-│── common/                         # Shared functions across domains
-│   ├── io.py                       # Data input/output handling
-│   ├── visualization.py            # Plot functions
+|── nonwear/                        # Non-wear algorithm (DETACH)
+│── io/                             # Data input/output handling
+|   |── embraceplus/
+|   |── geneactiv/
+│── visualization/                  |# Plot functions
 │
 │── notebooks/                      # Jupyter Notebooks - playground
 │── docs/                           # Documentation
 │── tests/                          # Unit tests
-│── README.md                       # Project overview
-│── requirements.txt                # Dependencies
-│── setup.py                        # Python package setup
-│── .gitignore                      # Files to ignore in Git
+
 ```
