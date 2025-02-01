@@ -1,4 +1,4 @@
-# Wearable Data Processing
+# DARE Wearable Data Processing 
 This repository contains pipelines for processing wearable sensor data of the DARE (Digital Lifelong Prevention) project. 
 Functionalities across three domains:
 - **Sleep**
