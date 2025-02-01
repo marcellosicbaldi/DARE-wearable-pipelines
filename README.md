@@ -30,7 +30,7 @@ wearable-data-processing/
 │   ├── io.py                       # Data input/output handling
 │   ├── visualization.py            # Plot functions
 │
-│── notebooks/                      # Jupyter Notebooks for analysis
+│── notebooks/                      # Jupyter Notebooks - playground
 │── docs/                           # Documentation
 │── tests/                          # Unit tests
 │── README.md                       # Project overview
