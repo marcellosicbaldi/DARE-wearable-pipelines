@@ -20,7 +20,7 @@ days = [day for day in days if day[0] != "."] # remove hidden files (needed for 
 
 with ThreadPoolExecutor() as executor: # Use ThreadPoolExecutor to parallelize the reading of the avro files
 
-  for i, day in enumerate(days[5:]):
+  for i, day in enumerate(days):
 
     # Initialize lists
     ppg_day = []
@@ -28,6 +28,10 @@ with ThreadPoolExecutor() as executor: # Use ThreadPoolExecutor to parallelize t
     acc_day = []
     t_acc_day = []
     sys_peaks_day = []
+    temp_day = []
+    t_temp_day = []
+    eda_day = []
+    t_eda_day = []
 
     os.makedirs(save_data_path + day, exist_ok=True)
 
@@ -41,19 +45,25 @@ with ThreadPoolExecutor() as executor: # Use ThreadPoolExecutor to parallelize t
 
     print("Concatenating data...")
 
-    for ppg, t_ppg, acc, t_acc, t_sys_peaks in results:
+    for ppg, t_ppg, acc, t_acc, t_sys_peaks, temp, t_temp, eda, t_eda in results:
       
-      # Concatenate data for the current day
+    # Concatenate data for the current day
       ppg_day.extend(ppg)
       acc_day.extend(acc)
       t_ppg_day.extend(t_ppg)
       t_acc_day.extend(t_acc)
       sys_peaks_day.extend(t_sys_peaks)
+      temp_day.extend(temp)
+      t_temp_day.extend(t_temp)
+      eda_day.extend(eda)
+      t_eda_day.extend(t_eda)
 
     print("Storing data in parquet format...")
     # Store data for the current day in parquet format
     pd.DataFrame(ppg_day, index=t_ppg_day, columns = ["ppg"]).to_parquet(save_data_path + day + "/ppg.parquet")
     pd.DataFrame(acc_day, index=t_acc_day, columns=["x", "y", "z"]).to_parquet(save_data_path + day + "/acc.parquet")
     pd.DataFrame(sys_peaks_day, columns=["SysPeakTime"]).to_parquet(save_data_path + day + "/sys_peaks.parquet")
+    pd.DataFrame(temp_day, index=t_temp_day, columns=["temp"]).to_parquet(save_data_path + day + "/temp.parquet")
+    pd.DataFrame(eda_day, index=t_eda_day, columns=["eda"]).to_parquet(save_data_path + day + "/eda.parquet")
 
-    del ppg_day, t_ppg_day, acc_day, t_acc_day, sys_peaks_day # free memory
+    del ppg_day, t_ppg_day, acc_day, t_acc_day, sys_peaks_day, temp_day, t_temp_day, eda_day, t_eda_day # Free memory
