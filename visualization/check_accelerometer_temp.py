@@ -16,7 +16,7 @@ def plot_acc_temp(parquet_folder):
         Path to the folder containing Parquet files.
     """
     days = sorted(os.listdir(parquet_folder))
-    days = [day for day in days if day.startswith("day")]  # Remove hidden files
+    days = [day for day in days if not day.startswith(".")]  # Remove hidden files
 
     if not days:
         raise ValueError("No valid data days found in the directory.")
@@ -77,5 +77,5 @@ def plot_acc_temp(parquet_folder):
     curdoc().add_root(layout)
 
 # Run Bokeh app
-parquet_path = "/Users/marcellosicbaldi/Library/CloudStorage/OneDrive-AlmaMaterStudiorumUniversitàdiBologna/tesi_Sara/Empatica/data/parquet/"
+parquet_path = "/Users/augenpro/Documents/Empatica/data_sara/data/parquet/"
 plot_acc_temp(parquet_path)
