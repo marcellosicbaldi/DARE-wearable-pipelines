@@ -1,3 +1,7 @@
+import sys
+
+from heart_rate.extract_summary_metrics import extract_summary_metrics
+
 import numpy as np
 import pandas as pd
 from bokeh.plotting import figure
@@ -54,17 +58,6 @@ for i in range(nights.shape[0]):
 # box = BoxAnnotation(left=night1_GGIR[0], right=night1_GGIR[1], fill_color="gray", fill_alpha=0.2, line_color="black")#, line_width=2)
 p.add_layout(box)
 
-# Helper function to compute HR statistics
-def compute_hr_stats(hr_series):
-    return {
-        "median": hr_series.median(),
-        "q1": hr_series.quantile(0.25),
-        "q3": hr_series.quantile(0.75),
-    }
-
-# Convert results into a DataFrame
-# iqr_summary = pd.DataFrame(source_iqr_data)
-
 # Hover tool
 # hover = HoverTool(tooltips=[("Time", "@time{%d %B %H:%M:%S}"), ("HR", "@hr{0.0}")], formatters={"@time": "datetime"}, mode="vline")
 # p.add_tools(hover)
@@ -78,60 +71,16 @@ def update_resample(attr, old, new):
 
     if interval in ["Day vs Night"]:
         # Reinitialize the data storage
-        source_iqr_data = {"time": [], "q1": [], "q3": [], "median": []}
-
-        # Add the first day
-        hr_segment = hr_belief.loc[start_first_day:nights.iloc[0]["start"]]
-        if not hr_segment.empty:
-            hr_stats = compute_hr_stats(hr_segment["HR"])
-            source_iqr_data["time"].append(start_first_day + (nights.iloc[0]["start"] - start_first_day) / 2)
-            source_iqr_data["median"].append(hr_stats["median"])
-            source_iqr_data["q1"].append(hr_stats["q1"])
-            source_iqr_data["q3"].append(hr_stats["q3"])
-        time_source = [start_first_day + (nights.iloc[0]["start"] - start_first_day) / 2]
-        # Iterate over all sleep periods
-        for i in range(len(nights)):
-            # Night period (during sleep)
-            night_start = nights.iloc[i]["start"]
-            night_end = nights.iloc[i]["end"]
-            mid_night = night_start + (night_end - night_start) / 2
-
-            # Extract HR data for the night
-            hr_segment = hr_belief.loc[night_start:night_end]
-            if not hr_segment.empty:
-                hr_stats = compute_hr_stats(hr_segment["HR"])
-
-                # Store results for night
-                source_iqr_data["time"].append(mid_night)
-                source_iqr_data["median"].append(hr_stats["median"])
-                source_iqr_data["q1"].append(hr_stats["q1"])
-                source_iqr_data["q3"].append(hr_stats["q3"])
-
-            # Daytime period (after night)
-            if i < len(nights) - 1:
-                next_night_start = nights.iloc[i + 1]["start"]
-            else:
-                next_night_start = end_last_day  # Last period extends to the last timestamp
-
-            mid_day = night_end + (next_night_start - night_end) / 2
-
-            # Extract HR data for the day
-            hr_segment = hr_belief.loc[night_end:next_night_start]
-            if not hr_segment.empty:
-                hr_stats = compute_hr_stats(hr_segment["HR"])
-
-                # Store results for day
-                source_iqr_data["time"].append(mid_day)
-                source_iqr_data["median"].append(hr_stats["median"])
-                source_iqr_data["q1"].append(hr_stats["q1"])
-                source_iqr_data["q3"].append(hr_stats["q3"])
-
-            time_source.append(mid_night)
-            time_source.append(mid_day)
+        source_iqr_data, time_source = extract_summary_metrics(hr_belief, nights)
 
         source_iqr.data = source_iqr_data
         source.data = {"time": time_source, "hr": source_iqr_data["median"]}
-        
+
+        p.renderers = [line]
+        p.vbar(x="time", top="q3", bottom="q1", width=60*60*6*1000, source=source_iqr,
+            fill_color="blue", fill_alpha=0.3, legend_label="IQR")
+        p.scatter(x="time", y="median", source=source_iqr, size=8, color="black", legend_label="Median")
+
         p.legend.location = "top_left"
         p.legend.click_policy = "hide"
         p.legend.label_text_font_size = "16pt"
@@ -142,6 +91,10 @@ def update_resample(attr, old, new):
         iqr_df = hr_belief.resample(interval).agg(["median", lambda x: x.quantile(0.25), lambda x: x.quantile(0.75)]).dropna()
         iqr_df.columns = ["median", "q1", "q3"]
         source_iqr.data = {"time": iqr_df.index, "q1": iqr_df["q1"], "q3": iqr_df["q3"], "median": iqr_df["median"]}
+        p.renderers = [line]
+        p.vbar(x="time", top="q3", bottom="q1", width=800000, source=source_iqr,
+            fill_color="blue", fill_alpha=0.3, legend_label="IQR")
+        p.scatter(x="time", y="median", source=source_iqr, size=8, color="black", legend_label="Median")
         p.legend.location = "top_left"
         p.legend.click_policy = "hide"
         p.legend.label_text_font_size = "16pt"

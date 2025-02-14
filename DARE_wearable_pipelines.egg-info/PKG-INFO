@@ -1,0 +1,10 @@
+Metadata-Version: 2.2
+Name: DARE-wearable-pipelines
+Version: 0.1
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: scipy
+Requires-Dist: matplotlib
+Requires-Dist: seaborn
+Requires-Dist: jupyter
+Dynamic: requires-dist
