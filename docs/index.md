@@ -5,14 +5,19 @@ This repository contains Python pipelines for processing wearable sensor data ac
 - **Heart Rate**
 - **Physical Activity**
 
-## Features
-✅ Preprocessing of sensor data
-✅ Feature extraction for sleep, HR, and activity
-✅ Easy-to-use modular design
+# Wearable Data Processing
 
-## Quick Start
-To install dependencies and run:
-```bash
-git clone https://github.com/marcellosicbaldi/wearable-data-processing.git
-cd wearable-data-processing
-pip install -r requirements.txt
+This package provides tools for processing wearable sensor data across multiple domains:
+- **Sleep**: Extract sleep-related features from accelerometer data.
+- **Heart Rate**: Compute HR, HRV, and related metrics.
+- **Physical Activity**: Extract metrics of physical activity and mobility (e.g., gait).
+
+## 📌 Getting Started
+1. **Installation**: Future
+2. **Usage**: See [Usage Guide](usage.md)
+3. **Modules**:
+   - [Sleep](sleep.md)
+   - [Heart Rate](heart_rate.md)
+   - [Physical Activity](physical_activity.md)
+   - [Data Handling (`io/`)](io.md)
+   - [Visualization](visualization.md)
