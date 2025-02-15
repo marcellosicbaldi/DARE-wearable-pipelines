@@ -20,7 +20,7 @@ from numpy import (
     float64,
 )
 
-from utils.resample_signal import apply_resample
+from utils.resample_signal import apply_resample_empatica
 
 class ReadEmpaticaAvro():
     """
@@ -323,7 +323,7 @@ class ReadEmpaticaAvro():
                 continue
             
             # Resample the stream to match BVP
-            _, (stream_rs,) = apply_resample(
+            _, (stream_rs,) = apply_resample_empatica(
                 time=stream["time"],
                 time_rs=bvp_dict["time"],
                 data=(stream["values"],),
