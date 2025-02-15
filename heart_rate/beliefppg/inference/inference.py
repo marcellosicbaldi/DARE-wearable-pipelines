@@ -7,13 +7,16 @@ from typing import (
 import numpy as np
 import tensorflow as tf
 
-from beliefppg.datasets.pipeline_generator import (
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from datasets.pipeline_generator import (
     prepare_session_spec,
     prepare_session_time,
 )
-from beliefppg.model.config import InputConfig
-from beliefppg.model.load import load_inference_model
-from beliefppg.util.preprocessing import get_strided_windows
+from model.config import InputConfig
+from model.load import load_inference_model
+from util.preprocessing import get_strided_windows
 
 def infer_hr_uncertainty(ppg: np.array, ppg_freq: int, acc: Optional[np.ndarray] = None, acc_freq: Optional[int] = None,
              decoding: str = "sumproduct", use_time_backbone=True, uncertainty: str="entropy",

@@ -19,9 +19,9 @@ from tensorflow.keras.layers import (
     UpSampling1D,
     )
 
-from beliefppg.model.config import InputConfig
-from beliefppg.model.positional_encoding import PositionalEncoding
-from beliefppg.model.timedomain_backbone import get_timedomain_backbone
+from model.config import InputConfig
+from model.positional_encoding import PositionalEncoding
+from model.timedomain_backbone import get_timedomain_backbone
 
 
 @tf.keras.utils.register_keras_serializable('AveragePooling1D')
