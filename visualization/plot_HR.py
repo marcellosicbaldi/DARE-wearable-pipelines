@@ -10,19 +10,31 @@ from bokeh.models import ColumnDataSource, Select, DatetimeTickFormatter, Whiske
 from bokeh.layouts import column
 from bokeh.io import curdoc
 
-# Load the HR data
-hr_file_path = "/Users/augenpro/Documents/Empatica/data_sara/data/GGIR_input/"
+import argparse
+
+# Argument parser
+parser = argparse.ArgumentParser(description="Start Bokeh HR visualization with user-defined files.")
+parser.add_argument("--hr_file", type=str, required=True, help="Path to heart rate .pkl file")
+parser.add_argument("--spt_file", type=str, required=True, help="Path to sleep period .npy file")
+args = parser.parse_args()
 
 # Load the HR data
-file_path = hr_file_path + "hr_belief.pkl" # Update with your actual file path
-hr_belief = pd.read_pickle(file_path)#.loc[:pd.Timestamp("2024-05-21 23:45:00")]
+hr_belief = pd.read_pickle(args.hr_file)
+
+# Load the sleep period data
+start_end_sleep = np.load(args.spt_file, allow_pickle=True)
+
+# # Load the HR data
+# hr_file_path = "/Users/augenpro/Documents/Empatica/data_sara/data/GGIR_input/"
+
+# # Load the HR data
+# file_path = hr_file_path + "hr_belief.pkl" # Update with your actual file path
+# hr_belief = pd.read_pickle(file_path)#.loc[:pd.Timestamp("2024-05-21 23:45:00")]
 
 # Start and end of each SPT
-start_end_sleep = np.load("/Users/augenpro/Documents/Empatica/data_sara/data/GGIR_input/SPT_window_GGIR.npy", allow_pickle=True)
+# start_end_sleep = np.load("/Users/augenpro/Documents/Empatica/data_sara/data/GGIR_input/SPT_window_GGIR.npy", allow_pickle=True)
 nights = pd.DataFrame(start_end_sleep, columns=["start", "end"])
 days = pd.DataFrame(columns=["start", "end"])
-# days["start"] = nights["end"].iloc[:-1].reset_index(drop=True)
-# days["end"] = nights["start"].iloc[1:].reset_index(drop=True)
 start_first_day = hr_belief.index[0]
 end_last_day =  hr_belief.index[-1]
 
