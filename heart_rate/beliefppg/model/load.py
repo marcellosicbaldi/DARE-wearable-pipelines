@@ -7,14 +7,14 @@ from tensorflow.keras.models import (
     )
 from tensorflow.keras.utils import custom_object_scope
 
-import beliefppg.model.belief_ppg
-from beliefppg.model.belief_ppg import (
+import model.belief_ppg
+from model.belief_ppg import (
     AveragePooling1D,
     FlexibleAttention,
     )
-from beliefppg.model.binned_regression_loss import BinnedRegressionLoss
-from beliefppg.model.positional_encoding import PositionalEncoding
-from beliefppg.model.prior_layer import PriorLayer
+from model.binned_regression_loss import BinnedRegressionLoss
+from model.positional_encoding import PositionalEncoding
+from model.prior_layer import PriorLayer
 
 
 def load_inference_model(model_path: str) -> Model:
