@@ -7,7 +7,10 @@ DARE_wearable_pipelines.egg-info/requires.txt
 DARE_wearable_pipelines.egg-info/top_level.txt
 heart_rate/__init__.py
 heart_rate/extract_summary_metrics.py
-heart_rate/ppg_utils.py
+heart_rate/heart_rate_fragmentation.py
+heart_rate/hrv.py
+heart_rate/kubios.py
+heart_rate/ppg_beat_detection.py
 heart_rate/beliefppg/__init__.py
 heart_rate/beliefppg/datasets/__init__.py
 heart_rate/beliefppg/datasets/file_reader.py
@@ -28,3 +31,4 @@ heart_rate/beliefppg/util/augmentations.py
 heart_rate/beliefppg/util/callbacks.py
 heart_rate/beliefppg/util/preprocessing.py
 sleep/__init__.py
+sleep/detect_acc_bursts.py
