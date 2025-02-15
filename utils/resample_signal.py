@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.signal import cheby1, sosfiltfilt
 
-def apply_resample(
+def apply_resample_empatica(
     *, time, goal_fs=None, time_rs=None, data=(), indices=(), aa_filter=True, fs=None
 ):
     """
@@ -121,3 +121,47 @@ def apply_resample(
         ret += (indices_rs,)
 
     return ret
+
+def apply_resample(
+    *, time, goal_fs=None, time_rs=None, data=None, indices=None, aa_filter=True, fs=None
+):
+    """
+    Do the same as above but for a numpy array as input
+    """
+    def resample(x, factor, t, t_rs):
+        if (int(factor) == factor) and (factor > 1):
+            # in case that t_rs is provided and ends earlier than t
+            n = np.nonzero(t <= t_rs[-1])[0][-1] + 1
+            return (x[: n : int(factor)],)
+        else:
+            if x.ndim == 1:
+                return (np.interp(t_rs, t, x),)
+            elif x.ndim == 2:
+                xrs = np.zeros((t_rs.size, x.shape[1]), dtype=np.float64)
+                for j in range(x.shape[1]):
+                    xrs[:, j] = np.interp(t_rs, t, x[:, j])
+                return (xrs,)
+    if fs is None:
+        # compute sampling frequency by hand
+        fs = 1 / np.mean(np.diff(time[:5000]))
+    if time_rs is None and goal_fs is None:
+        raise ValueError("One of `time_rs` or `goal_fs` is required.")
+    if time_rs is None:
+        if int(fs / goal_fs) == fs / goal_fs and goal_fs < fs:
+            time_rs = time[:: int(fs / goal_fs)]
+        else:
+            time_rs = np.arange(time[0], time[-1], 1 / goal_fs)
+    else:
+        goal_fs = 1 / np.mean(np.diff(time_rs[:5000]))
+        # prevent t_rs from extrapolating
+        time_rs = time_rs[time_rs <= time[-1]]
+    if (fs / goal_fs) >= 1.0:
+        sos = cheby1(8, 0.05, 0.8 / (fs / goal_fs), output="sos")
+    else:
+        aa_filter = False
+    
+    data_to_rs = sosfiltfilt(sos, data, axis=0) if aa_filter else data
+    data_rs = resample(data_to_rs, fs / goal_fs, time, time_rs)
+
+    return time_rs, data_rs
+
