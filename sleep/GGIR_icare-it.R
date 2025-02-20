@@ -5,16 +5,26 @@ silver_dir <- "/Users/augenpro/Documents/Age-IT/data/Silver"
 visit <- "T0 (baseline)"
 sensors <- c("GeneActivPolso", "GeneActivCaviglia")
 
-
-subjects = sort(list.dirs(bronze_dir, full.names = FALSE, recursive = FALSE))
+subjects <- sort(list.dirs(bronze_dir, full.names = FALSE, recursive = FALSE))
+subjects <- subjects[c(15:length(subjects))]
 
 for (sub in subjects) {
   
+  print(sub)
+  
   for (sensor in sensors) {
+    
+    print(sensor)
     
     datadir <- file.path(bronze_dir, sub, visit, sensor)
     # Find file that ends in bin (full path)
     bin_file_path <- list.files(datadir, pattern = "\\.bin$", full.names = TRUE)
+    
+    # Check if no bin file is found, skip this iteration
+    if (length(bin_file_path) == 0) {
+      cat("No .bin file found for", sub, "in", sensor, "\n")
+      next # Going to the next iteration
+    }
     
     # Output_dir (Silver layer)
     output_dir <- file.path(silver_dir, sub, visit, sensor)
@@ -134,5 +144,4 @@ for (sub in subjects) {
       # For now using the default parameters, but has to be investigated
     )
   }
-  break
 }
