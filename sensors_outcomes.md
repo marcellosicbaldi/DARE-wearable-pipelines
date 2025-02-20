@@ -7,15 +7,15 @@
 
  
 ## Sleep
-|Parameter        |Body location     |Pipeline   |Study                      | Notes | Ref |
-|-----------------|------------------|-----------|---------------------------|-------|     |
-|Onset            |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |     |  
-|Offset           |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |     |
-|Duration         |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |     |
-|Efficiency       |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |     |
-|COSINOR          |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |     |
-|IV               |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |     |
-|IS               |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |     |
+|Parameter        |Body location     |Pipeline   |Study                      | Notes |
+|-----------------|------------------|-----------|---------------------------|-------|
+|Onset            |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |
+|Offset           |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |
+|Duration         |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |
+|Efficiency       |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |
+|COSINOR          |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |
+|IV               |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |
+|IS               |Non-dominant wrist|GGIR       | `FALLSPREDICT` , `iCAREit`|       |
 
 ## Gait
 |Parameter                                         |Body location   |Pipeline   |Study          | Notes               |
