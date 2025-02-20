@@ -64,7 +64,8 @@ def plot_ppg(parquet_folder):
     curdoc().add_root(layout)
 
 # Run the visualization
-path = "/Users/marcellosicbaldi/Library/CloudStorage/OneDrive-AlmaMaterStudiorumUniversitàdiBologna/tesi_Sara/Empatica/data/parquet/"
-plot_ppg(path)
+if __name__ == "__main__":
+    path = "/Users/marcellosicbaldi/Library/CloudStorage/OneDrive-AlmaMaterStudiorumUniversitàdiBologna/tesi_Sara/Empatica/data/parquet/"
+    plot_ppg(path)
 # Run the Bokeh server with the following command:
 # bokeh serve --show visualization/check_ppg.py
