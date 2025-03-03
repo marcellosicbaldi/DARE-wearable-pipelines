@@ -10,7 +10,8 @@ It provides **efficient methods** to load, preprocess, and structure data for do
    - **EmbracePlus** (`embraceplus/`)
    - **GENEActiv** (`geneactiv/`)
    - **RootiRx** (`rootirx/`)
-   - **VeritySense** recorded with **VEGA** (`veritysense/`)  
+   - **VeritySense** recorded with **VEGA** (`veritysense/`)
+
 ✔ Handles **multiple file formats** (`.bin`, `.avro`, `.csv`, `.json`).  
 ✔ Ensures **consistent timestamp formats** across devices.  
 ✔ Provides **structured DataFrames** for further processing.
@@ -31,27 +32,29 @@ data_io/
 ## 🚀 Supported Devices & Usage
 
 ### **:one: EmbracePlus (Empatica)**
-EmbracePlus `.bin` files contain raw **PPG, ACC, EDA, and temperature** data.  
-📌 **Usage Example**
-```python
-from data_io.embraceplus.load_embraceplus import load_embraceplus_data
+EmbracePlus `.avro` files contain raw **PPG, ACC, EDA, temperature** data, as well as **systolic peaks time**
 
-# Load and preview EmbracePlus data
-df = load_embraceplus_data("path/to/embraceplus_data.bin")
-print(df.head())
+📌 **Usage Example**
+
+Reading a single 30 min file:
+```python
+from data_io.embraceplus.read_avro import ReadEmpaticaAvro
+empatica_reader = ReadEmpaticaAvro()
+data = empatica_reader.read(file=avro_file)
+print(data.keys())
 ```
+dict_keys(['systolic_peaks', 'steps', 'acc', 'time', 'fs', 'bvp', 'time_temp', 'fs_temp', 'temp', 'time_eda', 'fs_eda', 'eda'])
 
 ---
 
 ### **:two: GENEActiv**
-GENEActiv devices record **high-frequency accelerometer data** for sleep and activity analysis.  
+EmbracePlus `.avro` files contain raw **ACC, temperature, and light** data.
+
 📌 **Usage Example**
 ```python
-from data_io.geneactiv.load_geneactiv import load_geneactiv_data
-
-# Load and preview GENEActiv data
-df = load_geneactiv_data("path/to/geneactiv_data.csv")
-print(df.describe())
+from skdh.io import ReadBin
+reader = ReadBin()
+data = reader.predict(file = file_path) # np.array shape (X, 5) --> acc_x, acc_y, acc_z, temp, light
 ```
 
 ---
