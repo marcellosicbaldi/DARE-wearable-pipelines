@@ -96,7 +96,7 @@ def detect_bursts(acc, sampling_rate, envelope = True, resample_envelope = True,
     """
 
     # band-pass filter the signal
-    acc = pd.Series(nk.signal_filter(acc.values, sampling_rate = sampling_rate, lowcut=0.1, highcut=10, method='butterworth', order=8), index = acc.index)
+    acc = pd.Series(nk.signal_filter(acc.values.flatten(), sampling_rate = sampling_rate, lowcut=0.1, highcut=10, method='butterworth', order=8), index = acc.index)
 
     if envelope:
         env_diff = compute_envelope(acc, resample = resample_envelope)

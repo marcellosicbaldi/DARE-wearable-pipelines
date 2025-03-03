@@ -6,7 +6,7 @@ visit <- "T0 (baseline)"
 sensors <- c("GeneActivPolso", "GeneActivCaviglia")
 
 subjects <- sort(list.dirs(bronze_dir, full.names = FALSE, recursive = FALSE))
-subjects <- subjects[c(15:length(subjects))]
+subjects <- c("08667", "20603", "36765")
 
 for (sub in subjects) {
   
@@ -136,7 +136,7 @@ for (sub in subjects) {
       # Visual report         
       timewindow = c("MM"), # window over which summary statistics are derived
       
-      visualreport=TRUE # report combined from g.part2 and g.part4 
+      visualreport=TRUE, # report combined from g.part2 and g.part4 
       
       #.................................................
       # Part 6
@@ -145,3 +145,7 @@ for (sub in subjects) {
     )
   }
 }
+
+
+
+# Try to embed an external function to save to parquet
