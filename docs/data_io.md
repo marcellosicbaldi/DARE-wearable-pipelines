@@ -35,6 +35,7 @@ data_io/
 EmbracePlus `.bin` files contain raw **PPG, ACC, EDA, temperature** data, as well as **systolic peaks time**
 
 📌 **Usage Example**
+
 Reading a single 30 min file:
 ```python
 from data_io.embraceplus.read_avro import ReadEmpaticaAvro
