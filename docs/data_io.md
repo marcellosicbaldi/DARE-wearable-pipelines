@@ -30,7 +30,7 @@ data_io/
 
 ## 🚀 Supported Devices & Usage
 
-### **1️⃣ EmbracePlus (Empatica)**
+### **:one: EmbracePlus (Empatica)**
 EmbracePlus `.bin` files contain raw **PPG, ACC, EDA, and temperature** data.  
 📌 **Usage Example**
 ```python
