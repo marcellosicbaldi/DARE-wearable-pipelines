@@ -10,7 +10,8 @@ It provides **efficient methods** to load, preprocess, and structure data for do
    - **EmbracePlus** (`embraceplus/`)
    - **GENEActiv** (`geneactiv/`)
    - **RootiRx** (`rootirx/`)
-   - **VeritySense** recorded with **VEGA** (`veritysense/`)  
+   - **VeritySense** recorded with **VEGA** (`veritysense/`)
+
 ✔ Handles **multiple file formats** (`.bin`, `.avro`, `.csv`, `.json`).  
 ✔ Ensures **consistent timestamp formats** across devices.  
 ✔ Provides **structured DataFrames** for further processing.
