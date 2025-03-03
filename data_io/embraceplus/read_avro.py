@@ -34,7 +34,7 @@ class ReadEmpaticaAvro():
         of the key you do not want to trim. If provided, the tuple should be of the form
         (start_key, end_key). When provided, trim datetimes will be assumed to be in the
         same timezone as the data (ie naive if naive, or in the timezone provided).
-    resample_to_accel : bool, optional
+    resample_to_bvp : bool, optional
         Resample any additional data streams to match the accelerometer data stream.
         Default is True.
     """
@@ -383,7 +383,7 @@ class ReadEmpaticaAvro():
 
         Notes
         -----
-        There are two output formats, based on if `resample_to_accel` is True or False.
+        There are two output formats, based on if `resample_to_bvp` is True or False.
         If True, all available data streams except for `systolic_peaks` and `steps`
         are resampled to match the accelerometer data stream, which results in their
         values being present in the top level of the `results` dictionary, ie
