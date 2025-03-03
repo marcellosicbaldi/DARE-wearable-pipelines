@@ -32,14 +32,14 @@ data_io/
 ## 🚀 Supported Devices & Usage
 
 ### **:one: EmbracePlus (Empatica)**
-EmbracePlus `.bin` files contain raw **PPG, ACC, EDA, and temperature** data.  
+EmbracePlus `.bin` files contain raw **PPG, ACC, EDA, temperature** data, as well as **systolic peaks time**
 📌 **Usage Example**
 ```python
-from data_io.embraceplus.load_embraceplus import load_embraceplus_data
-
-# Load and preview EmbracePlus data
-df = load_embraceplus_data("path/to/embraceplus_data.bin")
-print(df.head())
+from data_io.embraceplus.read_avro import ReadEmpaticaAvro
+empatica_reader = ReadEmpaticaAvro()
+data = empatica_reader.read(file=avro_file)
+print(data.keys())
+dict_keys(['systolic_peaks', 'steps', 'acc', 'time', 'fs', 'bvp', 'time_temp', 'fs_temp', 'temp', 'time_eda', 'fs_eda', 'eda'])
 ```
 
 ---
