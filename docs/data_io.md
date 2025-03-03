@@ -33,14 +33,16 @@ data_io/
 
 ### **:one: EmbracePlus (Empatica)**
 EmbracePlus `.bin` files contain raw **PPG, ACC, EDA, temperature** data, as well as **systolic peaks time**
+
 📌 **Usage Example**
+Reading a single 30 min file:
 ```python
 from data_io.embraceplus.read_avro import ReadEmpaticaAvro
 empatica_reader = ReadEmpaticaAvro()
 data = empatica_reader.read(file=avro_file)
 print(data.keys())
-dict_keys(['systolic_peaks', 'steps', 'acc', 'time', 'fs', 'bvp', 'time_temp', 'fs_temp', 'temp', 'time_eda', 'fs_eda', 'eda'])
 ```
+dict_keys(['systolic_peaks', 'steps', 'acc', 'time', 'fs', 'bvp', 'time_temp', 'fs_temp', 'temp', 'time_eda', 'fs_eda', 'eda'])
 
 ---
 
