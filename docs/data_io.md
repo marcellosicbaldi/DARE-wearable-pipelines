@@ -32,7 +32,7 @@ data_io/
 ## 🚀 Supported Devices & Usage
 
 ### **:one: EmbracePlus (Empatica)**
-EmbracePlus `.bin` files contain raw **PPG, ACC, EDA, temperature** data, as well as **systolic peaks time**
+EmbracePlus `.avro` files contain raw **PPG, ACC, EDA, temperature** data, as well as **systolic peaks time**
 
 📌 **Usage Example**
 
@@ -48,14 +48,13 @@ dict_keys(['systolic_peaks', 'steps', 'acc', 'time', 'fs', 'bvp', 'time_temp', '
 ---
 
 ### **:two: GENEActiv**
-GENEActiv devices record **high-frequency accelerometer data** for sleep and activity analysis.  
+EmbracePlus `.avro` files contain raw **ACC, temperature, and light** data.
+
 📌 **Usage Example**
 ```python
-from data_io.geneactiv.load_geneactiv import load_geneactiv_data
-
-# Load and preview GENEActiv data
-df = load_geneactiv_data("path/to/geneactiv_data.csv")
-print(df.describe())
+from skdh.io import ReadBin
+reader = ReadBin()
+data = reader.predict(file = file_path) # np.array shape (X, 5) --> acc_x, acc_y, acc_z, temp, light
 ```
 
 ---
