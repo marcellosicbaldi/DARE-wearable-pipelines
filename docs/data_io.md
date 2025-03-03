@@ -43,7 +43,7 @@ print(df.head())
 
 ---
 
-### **2️⃣ GENEActiv**
+### **:two: GENEActiv**
 GENEActiv devices record **high-frequency accelerometer data** for sleep and activity analysis.  
 📌 **Usage Example**
 ```python
@@ -56,7 +56,7 @@ print(df.describe())
 
 ---
 
-### **3️⃣ RootiRx**
+### **:three: RootiRx**
 RootiRx devices provide **PPG-based HR and HRV measurements**.  
 📌 **Usage Example**
 ```python
@@ -69,7 +69,7 @@ df.plot()
 
 ---
 
-### **4️⃣ VeritySense (VEGA)**
+### **:four: VeritySense (VEGA)**
 Polar VeritySense data recorded using VEGA software includes **HR and motion data**.  
 📌 **Usage Example**
 ```python
@@ -83,9 +83,7 @@ df.info()
 ---
 
 ## 🛠 Handling Large Data Files
-If datasets are **too large** for memory:
-- Use **chunk-based processing** (`pandas.read_csv(..., chunksize=10000)`)
-- Convert raw data to **HDF5 or Parquet** for fast retrieval:
+- Convert raw data to **Parquet** for fast retrieval:
   ```python
   df.to_parquet("data.parquet")
   df = pd.read_parquet("data.parquet")
@@ -95,8 +93,7 @@ If datasets are **too large** for memory:
 
 ## ⚙ Future Enhancements
 - ✅ **Unified Data Loader** across all devices.
-- ✅ **Automatic Sensor Synchronization** (e.g., aligning timestamps).
-- ✅ **Improved File Format Support** (adding `.edf` for sleep EEG).
+- ✅ **Automatic Sensor Synchronization** for recordings using multi-sensor set-ups.
 
 ---
 
