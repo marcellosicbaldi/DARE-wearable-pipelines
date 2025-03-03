@@ -6,7 +6,7 @@ from bokeh.plotting import figure, show
 from bokeh.models import DatetimeTickFormatter
 from bokeh.layouts import column, gridplot
 
-def plot_HRV(ibi, hrv):
+def plot_HRV(ibi, hrv, hrv_metric = "rmssd"):
     """
     Plot the IBI and HRV signal.
     Parameters
@@ -15,10 +15,12 @@ def plot_HRV(ibi, hrv):
         Night nter-beat interval signal (possibly already filtered for accelerometer bursts).
     hrv : pd.DataFrame
         Night heart rate variability signal.
+    hrv_metric : str, optional
+        HRV metric to plot.
     """
 
     p1 = figure(x_axis_type="datetime", title="IBI", width=1200, height=400)
-    p1.line(ibi.index, ibi.values, line_width=2)
+    p1.line(ibi.index, ibi.values.flatten(), line_width=2)
     p1.title.text_font_size = "16pt"
     p1.yaxis.axis_label = "IBI (s)"
     p1.xaxis.axis_label_text_font_size = "16pt"
@@ -37,11 +39,11 @@ def plot_HRV(ibi, hrv):
     # HRV_df.drop(columns=["time"], inplace=True)
     HRV_df_plot = hrv.resample("1min").mean()
 
-    p2 = figure(x_axis_type="datetime", title="rmssd", width=1200, height=400, x_range=p1.x_range)
-    p2.line(HRV_df_plot["time"], HRV_df_plot["rmssd"], legend_label="rmssd", line_width=2, color="blue")
-    p2.scatter(HRV_df_plot["time"], HRV_df_plot["rmssd"], legend_label="rmssd", color="blue", size = 11)
+    p2 = figure(x_axis_type="datetime", title=hrv_metric, width=1200, height=400, x_range=p1.x_range)
+    p2.line(HRV_df_plot["time"], HRV_df_plot[hrv_metric], legend_label=hrv_metric, line_width=2, color="blue")
+    p2.scatter(HRV_df_plot["time"], HRV_df_plot[hrv_metric], legend_label=hrv_metric, color="blue", size = 11)
     # Horizontal line at the median, dashed
-    p2.line([HRV_df_plot["time"].iloc[0], HRV_df_plot["time"].iloc[-1]], [np.median(HRV_df_plot["rmssd"]), np.median(HRV_df_plot["rmssd"])], 
+    p2.line([HRV_df_plot["time"].iloc[0], HRV_df_plot["time"].iloc[-1]], [np.median(HRV_df_plot[hrv_metric]), np.median(HRV_df_plot[hrv_metric])], 
             line_width=2, color="black", line_dash="dashed", legend_label="Median")
     p2.title.text_font_size = "16pt"
     p2.legend.location = "top_left"
