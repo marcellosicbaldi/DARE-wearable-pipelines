@@ -146,6 +146,5 @@ for (sub in subjects) {
   }
 }
 
-
-
 # Try to embed an external function to save to parquet
+
