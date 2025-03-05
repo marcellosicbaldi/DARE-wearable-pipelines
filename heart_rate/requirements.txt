@@ -1,0 +1,12 @@
+dotmap==1.3.30
+scipy
+matplotlib
+numpy
+pandas
+scipy
+tensorflow>=2.18.0
+tf-keras
+tensorflow_probability~=0.22.1
+wandb
+fastparquet
+pyarrow
