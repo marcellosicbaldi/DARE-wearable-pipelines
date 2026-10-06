@@ -1,5 +1,7 @@
 # DARE-wearable-pipelines
 
+[![Distribution checks](https://github.com/marcellosicbaldi/DARE-wearable-pipelines/actions/workflows/ci.yml/badge.svg)](https://github.com/marcellosicbaldi/DARE-wearable-pipelines/actions/workflows/ci.yml)
+
 Research wearable workflows for the Bologna and Ravenna studies:
 
 - Empatica wrist sleep, circadian rhythm, activity intensity, heart rate and HRV
@@ -7,7 +9,7 @@ Research wearable workflows for the Bologna and Ravenna studies:
 - Lower-back IMU gait and time-in-bed processing
 - REDCap, FRAT-up import and combined cohort aggregation
 
-This is the sanitized publication candidate, with regression cases and fixes
+This repository contains the sanitized public workflows, with regression cases and fixes
 for the reviewed processing errors and an extracted shared processing core.
 Installation uses a locked environment, and GitHub Actions validates the
 distribution. The project is MIT-licensed, with incorporated-source notices
@@ -64,7 +66,7 @@ Linux x86_64**. Other Python versions and platforms have not been validated.
 The lockfile pins all resolved dependencies and their artifact hashes; direct
 scientific dependencies are also pinned in package metadata.
 
-Download or clone the desired GitHub revision, enter the repository directory,
+Download a [GitHub release](https://github.com/marcellosicbaldi/DARE-wearable-pipelines/releases), or clone the repository and check out the desired release tag. Enter the repository directory,
 and install [uv](https://docs.astral.sh/uv/getting-started/installation/) version
 `0.12.23`. Then:
 

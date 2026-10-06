@@ -36,6 +36,11 @@ dependencies = [
   "tqdm==4.67.3",
 ]
 
+[project.urls]
+Repository = "https://github.com/marcellosicbaldi/DARE-wearable-pipelines"
+Issues = "https://github.com/marcellosicbaldi/DARE-wearable-pipelines/issues"
+Documentation = "https://github.com/marcellosicbaldi/DARE-wearable-pipelines/blob/main/README.md"
+
 [project.optional-dependencies]
 heart-rate = [
   "beliefppg==0.3.1",

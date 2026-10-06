@@ -15,7 +15,15 @@ imply that the full scientific environment works on every platform.
 ## Install a reviewed revision
 
 Download the source archive from the desired GitHub release, or clone the
-repository and check out its release tag. Enter that directory and run:
+repository and check out its release tag. For version 0.1.0:
+
+```bash
+git clone https://github.com/marcellosicbaldi/DARE-wearable-pipelines.git
+cd DARE-wearable-pipelines
+git checkout v0.1.0
+```
+
+Install uv 0.12.23, then run:
 
 ```bash
 uv sync --locked

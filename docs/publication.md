@@ -170,10 +170,11 @@ inference on 51 synthetic windows and loaded MobGap's model with version
 warnings treated as errors. Both editable and wheel installations passed the
 18 command checks outside the repository. Wheel/source metadata and archive
 contents passed, and rebuilding the source archive produced identical wheel
-file contents. Linux dependency resolution was checked with a dry run; execution
-on Linux and hosted GitHub CI are still pending.
+file contents. The first [hosted CI run](https://github.com/marcellosicbaldi/DARE-wearable-pipelines/actions/runs/37432069654)
+also passed on Linux x86_64 and Apple Silicon macOS, including real model
+inference, distribution audits and installation outside the checkout.
 
-## Remaining release work
+## Licensing and publication
 
 The maintainer authorized the MIT License on 2026-10-06, with Marcello Sicbaldi
 as copyright holder. NeuroKit2 is credited for MSPTDfast as well as peak
@@ -181,5 +182,9 @@ correction. The GGIR inspiration and colleague contribution are documented in
 `THIRD_PARTY_NOTICES.md`; existing credits and upstream MIT notices are retained.
 The project license and third-party notices are required in wheel/source audits.
 
-The GitHub repository, hosted CI run and first public release remain pending.
-Follow [installation and release instructions](installation_and_releases.md).
+The [public GitHub repository](https://github.com/marcellosicbaldi/DARE-wearable-pipelines)
+contains only the reviewed publication history. The pre-existing repository was
+renamed and kept private; its historical contents were not imported. Release
+assets are published only after CI passes for their exact source commit. See
+[GitHub releases](https://github.com/marcellosicbaldi/DARE-wearable-pipelines/releases)
+and [installation and release instructions](installation_and_releases.md).

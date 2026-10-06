@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.1.0
+## 0.1.0 — 2026-10-06
 
-First consolidated release candidate for the Bologna and Ravenna wearable
+First consolidated release for the Bologna and Ravenna wearable
 processing workflows.
 
 - Shared `dare_wearables` core with separate cohort configuration and commands.
