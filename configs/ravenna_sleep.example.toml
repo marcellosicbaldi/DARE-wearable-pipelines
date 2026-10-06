@@ -1,0 +1,25 @@
+# No real participant identifiers or institution-specific paths are included.
+# Ravenna / GENEActiv wrist sleep + circadian configuration.
+# Relative paths are resolved from this config file's folder.
+
+[ravenna_sleep]
+input_root = "../data/ravenna/raw"
+output_root = "../data/ravenna/silver"
+
+# Optional: set this when the automatic search finds zero or multiple .bin files.
+# Relative values are resolved from input_root.
+# geneactiv_file_path = "900001/T0/GENEActiv/example.bin"
+
+participant = "900001"
+visit = "T0"
+sensor = "GENEActiv"
+timezone = "Europe/Rome"
+nonwear_method = "vanhees2013"
+require_subject_id_prefix = true
+
+# Optional guider files. Leave commented if unavailable.
+# diary_csv_path = "../data/ravenna/gold/sleep/diary_t0.csv"
+# lb_tib_csv_path = "../data/ravenna/gold/sleep/tib_lowerBack_t0.csv"
+
+return_epoch_outputs = true
+return_intermediates = false

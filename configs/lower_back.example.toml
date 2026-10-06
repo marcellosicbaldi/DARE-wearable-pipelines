@@ -1,0 +1,15 @@
+# No real participant identifiers or institution-specific paths are included.
+# Example only. Copy to lower_back.local.toml and set private paths.
+# Bologna data paths must be absolute (a leading ~ is expanded).
+
+[lower_back]
+bronze_root = "~/dare-data/bronze"
+silver_root = "~/dare-data/silver"
+redcap_csv = "~/dare-data/REDCap/fallspredict_data.csv"
+sensor = "McRoberts"
+visits = ["T0"]
+min_size_bytes = 1048576 # 1 MB
+participant_ids = []
+run_gait = true
+run_time_in_bed = true
+save_omx_to_parquet = false

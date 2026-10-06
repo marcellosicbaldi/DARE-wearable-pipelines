@@ -1,0 +1,18 @@
+# No real participant identifiers or institution-specific paths are included.
+# Example only. Copy to empatica_sleep.local.toml and set private paths.
+# Bologna data paths must be absolute (a leading ~ is expanded).
+
+[empatica_sleep]
+silver_root = "~/dare-data/silver"
+output_root = "~/dare-data/silver"
+recruitment_tracker_path = "~/dare-data/recruitment_tracker/recruitment_tracker.xlsx"
+diary_csv_path = "~/dare-data/gold/sleep/diary_t0.csv"
+lb_tib_csv_path = "~/dare-data/gold/sleep/tib_lowerBack_t0.csv"
+participant = "900001"
+visit = "T0"
+sensor = "Empatica"
+timezone = "Europe/Rome"
+parquet_engine = "fastparquet"
+nonwear_method = "empatica_detach"
+return_epoch_outputs = true
+return_intermediates = false

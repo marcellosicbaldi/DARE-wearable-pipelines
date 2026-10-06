@@ -1,0 +1,19 @@
+# No real participant identifiers or institution-specific paths are included.
+# Example only. Copy to heart_rate.local.toml and set private paths.
+# Bologna data paths must be absolute (a leading ~ is expanded).
+
+[heart_rate]
+input_root = "~/dare-data/silver"
+output_root = "~/dare-data/silver"
+participant = "900001"
+visits = ["T0", "T1"]
+sensor = "Empatica"
+
+output_subdir = "beliefppg"
+
+ppg_frequency = 64
+acc_frequency = 64
+empty_gap_seconds = 1.0
+min_good_portion_minutes = 10.0
+min_inference_minutes = 5.0
+skip_existing = true

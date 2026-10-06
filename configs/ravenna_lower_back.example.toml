@@ -1,0 +1,15 @@
+# No real participant identifiers or institution-specific paths are included.
+# Ravenna lower-back configuration.
+# Relative paths are resolved from this config file's folder.
+
+[lower_back]
+bronze_root = "../data/ravenna/bronze"
+silver_root = "../data/ravenna/silver"
+redcap_csv = "../data/ravenna/REDCap/fallspredict_data.csv"
+sensor = "McRoberts"
+visits = ["T0"]
+min_size_bytes = 314572800
+participant_ids = []
+run_gait = true
+run_time_in_bed = true
+save_omx_to_parquet = false

@@ -1,0 +1,32 @@
+# No real participant identifiers or institution-specific paths are included.
+# Example only. Copy to hrv.local.toml and set private paths.
+# Bologna data paths must be absolute (a leading ~ is expanded).
+
+[heart_rate_variability]
+input_root = "~/dare-data/silver"
+output_root = "~/dare-data/silver"
+sleep_output_root = "~/dare-data/silver"
+participant = "900001"
+visit = "T0"
+sensor = "Empatica"
+timezone = "Europe/Rome"
+
+output_subdir = "hrv"
+burst_output_subdir = "nocturnal_bursts"
+
+# Use SPT windows already produced by the wrist sleep pipeline:
+# silver/<participant>/<visit>/Empatica/sleep_circadian/sleep_output_all_guiders.csv
+sleep_output_subdir = "sleep_circadian"
+sleep_output_filename = "sleep_output_all_guiders.csv"
+sleep_guider_priority = ["sleep_diary", "HDCZA", "lower_back_tib"]
+
+# Optional fallback if sleep pipeline output is unavailable.
+# sleep_windows_path = "~/dare-data/gold/sleep/night_aggregation.csv"
+
+sampling_frequency = 64
+threshold_bursts = 0.035
+min_window = "1 min"
+max_window = "5 min"
+window_step = "1 min"
+min_beats_per_window = 30
+skip_existing = true
