@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from gp_pipeline.redcap.followup import extract_followup, parse_date, relative_month
+from fallspredict_gp_pipeline.redcap.followup import extract_followup, parse_date, relative_month
 
 
 def event(month, **values):

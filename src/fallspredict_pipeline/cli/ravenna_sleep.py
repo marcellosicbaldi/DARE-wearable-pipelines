@@ -11,11 +11,11 @@ from ..wrist.pipeline import (
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run the Ravenna GENEActiv wrist sleep pipeline.")
+    parser = argparse.ArgumentParser(description="Run the DARE-FALLSPREDICT GENEActiv wrist sleep pipeline.")
     parser.add_argument(
         "--config",
         default="configs/ravenna_sleep.local.toml",
-        help="Path to the Ravenna TOML configuration file.",
+        help="Path to the DARE-FALLSPREDICT TOML configuration file.",
     )
     parser.add_argument("--participant", help="Participant identifier to process.")
     parser.add_argument("--visit", help="Visit to process, for example T0 or T1.")
@@ -46,7 +46,7 @@ def main() -> None:
         visit=visit,
         sensor=config.sensor,
     )
-    print(f"Ravenna wrist pipeline completed. Outputs written to: {output_dir}")
+    print(f"DARE-FALLSPREDICT wrist pipeline completed. Outputs written to: {output_dir}")
 
 
 if __name__ == "__main__":

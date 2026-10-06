@@ -39,7 +39,7 @@ No implicit lookup of the old workspace or private study lists occurs.
 The TOML must contain only `[manual_exclusions]` with both `rmssd_sdnn_ids`
 and `sleep_circadian_ids`, each an array of quoted numeric identifiers.
 Duplicate normalized IDs and invalid structures are rejected. Existing
-Bologna-T0 HRV and Ravenna-T0 sleep/circadian/activity masking semantics are
+DARE-FALLSPREDICT GP-T0 HRV and DARE-FALLSPREDICT-T0 sleep/circadian/activity masking semantics are
 preserved; the data source for the identifiers has changed.
 
 ## Preventing accidental reintroduction
@@ -51,8 +51,8 @@ rejected. Tests generate data in temporary directories; no participant
 fixtures are distributed. Keep executed notebooks private or clear their
 outputs, execution counts, attachments and execution metadata before adding.
 
-Package discovery is restricted to `dare_wearables`, `gp_pipeline` and
-`ravenna_pipeline`, with implicit
+Package discovery is restricted to `dare_wearables`, `fallspredict_gp_pipeline` and
+`fallspredict_pipeline`, with implicit
 namespace discovery and automatic package-data inclusion disabled. Source
 distribution rules exclude local configuration and study file formats.
 Build artifacts should also be checked before release.
@@ -106,8 +106,8 @@ equivalence on the private study recordings.
 
 ## Shared-core extraction
 
-The third step moves common processing into `src/dare_wearables`. Bologna and
-Ravenna now share sensor readers, calibration/nonwear helpers, lower-back gait
+The third step moves common processing into `src/dare_wearables`. DARE-FALLSPREDICT GP and
+DARE-FALLSPREDICT now share sensor readers, calibration/nonwear helpers, lower-back gait
 and posture processing, sleep/circadian/activity algorithms, HR/HRV, REDCap
 processing and aggregation calculations. The core has no imports of either
 cohort package; both adapters can evolve their configuration independently.
@@ -122,8 +122,8 @@ compatibility; there is only one implementation of each algorithm.
 Existing commands, configuration classes, output paths and processing thresholds
 are retained. Compatibility modules forward old algorithm imports to the core;
 small wrappers preserve cohort-specific function defaults and positional argument
-order. In particular, Bologna retains its legacy gait-hours fallback while
-Ravenna requires measured nonwear minutes. Direct lower-back calls retain their
+order. In particular, DARE-FALLSPREDICT GP retains its legacy gait-hours fallback while
+DARE-FALLSPREDICT requires measured nonwear minutes. Direct lower-back calls retain their
 previous size defaults, separately from the configuration defaults.
 
 New architecture regressions check dependency direction, imports without either

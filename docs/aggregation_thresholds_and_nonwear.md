@@ -2,7 +2,7 @@
 
 This note summarizes the default GP pipeline rules for deciding whether data are usable for gait, sleep, physical activity, cardio, and circadian outputs, and how nonwear or invalid data are handled.
 
-Scope: the `src/gp_pipeline` package and the current config defaults in `configs/`.
+Scope: the `src/fallspredict_gp_pipeline` package and the current config defaults in `configs/`.
 The final cohort minimum-data rule was updated on 2026-10-02.
 
 The final `gp-aggregate-cohorts` step requires at least **3 valid days/nights**
@@ -37,17 +37,17 @@ valid_hours = hours - nonwear_time_minutes / 60
 valid_day = valid_hours > min_valid_hours
 ```
 
-Bologna also has legacy daily files (including the July 2026 exports) with
+DARE-FALLSPREDICT GP also has legacy daily files (including the July 2026 exports) with
 **no nonwear columns**, produced after nonwear samples had already been
 removed. For that format, `hours` is the retained wear duration and
-`valid_hours = hours`. The Bologna loader distinguishes these formats per file
+`valid_hours = hours`. The DARE-FALLSPREDICT GP loader distinguishes these formats per file
 before concatenation. An absent nonwear column is not the same as missing
 values inside an existing nonwear column: the latter cause an explicit error,
-as do missing/nonnumeric hours. Ravenna requires explicit nonwear minutes.
+as do missing/nonnumeric hours. DARE-FALLSPREDICT requires explicit nonwear minutes.
 The daily diagnostic `valid_hours_source` records the interpretation and is
 not exported as a participant feature. No zero nonwear values are imputed.
 
-This fixes the October refresh's false all-zero Bologna counts: concatenation
+This fixes the October refresh's false all-zero DARE-FALLSPREDICT GP counts: concatenation
 previously introduced NaN nonwear values for legacy files, and `NaN > 16`
 silently evaluated to False. Private diagnostic scripts and results are not distributed.
 
@@ -71,7 +71,7 @@ Aggregation then separates features into two groups:
 The gait export also includes QC fields such as `gait_n_days`, `gait_n_valid_days`, and `gait_mean_valid_hours`.
 
 The final `gp-aggregate-cohorts` analysis step additionally masks all gait
-measurements for Bologna and Ravenna rows where `gait_n_valid_days < 3`, while
+measurements for DARE-FALLSPREDICT GP and DARE-FALLSPREDICT rows where `gait_n_valid_days < 3`, while
 preserving those three QC fields. This applies to existing sensor exports and
 does not alter the standalone gait aggregation described above. Missing
 valid-day counts are not treated as zero; populated measurements without counts
@@ -253,20 +253,20 @@ Cardio:
 
 ## Main Source Files
 
-- `src/gp_pipeline/aggregation/gait.py`
-- `src/gp_pipeline/aggregation/sleep.py`
-- `src/gp_pipeline/aggregation/activity_intensity.py`
-- `src/gp_pipeline/aggregation/heart_rate.py`
-- `src/gp_pipeline/aggregation/hrv.py`
-- `src/gp_pipeline/wrist/circadian/circadian_pipeline_gp.py`
-- `src/gp_pipeline/wrist/circadian/circadian_pipeline.py`
-- `src/gp_pipeline/wrist/circadian/activity_intensity.py`
-- `src/gp_pipeline/wrist/sleep/sleep_pipeline_gp.py`
-- `src/gp_pipeline/wrist/sleep/vh2015_sib.py`
-- `src/gp_pipeline/wrist/sleep/vh2018_spt.py`
-- `src/gp_pipeline/wrist/nonwear/nimbaldetach.py`
-- `src/gp_pipeline/lower_back/preprocessing.py`
-- `src/gp_pipeline/lower_back/nonwear/vanhees2013.py`
-- `src/gp_pipeline/lower_back/pipeline.py`
-- `src/gp_pipeline/wrist/heart_rate/pipeline.py`
-- `src/gp_pipeline/wrist/heart_rate_variability/pipeline.py`
+- `src/fallspredict_gp_pipeline/aggregation/gait.py`
+- `src/fallspredict_gp_pipeline/aggregation/sleep.py`
+- `src/fallspredict_gp_pipeline/aggregation/activity_intensity.py`
+- `src/fallspredict_gp_pipeline/aggregation/heart_rate.py`
+- `src/fallspredict_gp_pipeline/aggregation/hrv.py`
+- `src/fallspredict_gp_pipeline/wrist/circadian/circadian_pipeline_gp.py`
+- `src/fallspredict_gp_pipeline/wrist/circadian/circadian_pipeline.py`
+- `src/fallspredict_gp_pipeline/wrist/circadian/activity_intensity.py`
+- `src/fallspredict_gp_pipeline/wrist/sleep/sleep_pipeline_gp.py`
+- `src/fallspredict_gp_pipeline/wrist/sleep/vh2015_sib.py`
+- `src/fallspredict_gp_pipeline/wrist/sleep/vh2018_spt.py`
+- `src/fallspredict_gp_pipeline/wrist/nonwear/nimbaldetach.py`
+- `src/fallspredict_gp_pipeline/lower_back/preprocessing.py`
+- `src/fallspredict_gp_pipeline/lower_back/nonwear/vanhees2013.py`
+- `src/fallspredict_gp_pipeline/lower_back/pipeline.py`
+- `src/fallspredict_gp_pipeline/wrist/heart_rate/pipeline.py`
+- `src/fallspredict_gp_pipeline/wrist/heart_rate_variability/pipeline.py`

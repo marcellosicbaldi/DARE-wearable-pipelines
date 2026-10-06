@@ -15,7 +15,7 @@ spec.loader.exec_module(guard)
 
 class PublicationTests(unittest.TestCase):
     def test_rejects_data_and_private_configs_even_with_harmless_contents(self):
-        for name in ("measurements.csv", "source.OMX", "src/gp_pipeline/outputs/report.md",
+        for name in ("measurements.csv", "source.OMX", "src/fallspredict_gp_pipeline/outputs/report.md",
                      "configs/settings.local.toml", "configs/settings.toml", "reference.pdf"):
             with self.subTest(name=name):
                 self.assertTrue(guard.check_content(name, b"example"))

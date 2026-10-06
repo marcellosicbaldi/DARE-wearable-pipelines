@@ -1,5 +1,5 @@
 # No real participant identifiers or institution-specific paths are included.
-# Ravenna / GENEActiv wrist sleep + circadian configuration.
+# DARE-FALLSPREDICT / GENEActiv wrist sleep + circadian configuration.
 # Relative paths are resolved from this config file's folder.
 
 [ravenna_sleep]

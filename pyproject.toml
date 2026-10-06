@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "DARE-wearable-pipelines"
-version = "0.1.0"
-description = "Bologna and Ravenna research workflows for wrist and lower-back wearables"
+version = "0.2.0"
+description = "DARE-FALLSPREDICT GP and DARE-FALLSPREDICT research workflows for wrist and lower-back wearables"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
 license = "MIT"
@@ -60,24 +60,24 @@ environments = [
 ]
 
 [project.scripts]
-gp-empatica-sleep = "gp_pipeline.cli.empatica_sleep:main"
-ravenna-sleep = "ravenna_pipeline.cli.ravenna_sleep:main"
-gp-lower-back = "gp_pipeline.cli.lower_back:main"
-ravenna-lower-back = "ravenna_pipeline.cli.lower_back:main"
-gp-hrv = "gp_pipeline.cli.hrv:main"
-gp-heart-rate = "gp_pipeline.cli.heart_rate:main"
-gp-aggregate-sleep = "gp_pipeline.aggregation.sleep:main"
-gp-aggregate-hrv = "gp_pipeline.aggregation.hrv:main"
-gp-aggregate-heart-rate = "gp_pipeline.aggregation.heart_rate:main"
-gp-aggregate-gait = "gp_pipeline.aggregation.gait:main"
-gp-aggregate-activity-intensity = "gp_pipeline.aggregation.activity_intensity:main"
-gp-aggregate-all = "gp_pipeline.aggregation.overall:main"
-gp-aggregate-redcap = "gp_pipeline.aggregation.redcap:main"
-gp-aggregate-cohorts = "gp_pipeline.aggregation.cohorts:main"
-ravenna-aggregate-sleep = "ravenna_pipeline.aggregation.sleep:main"
-ravenna-aggregate-gait = "ravenna_pipeline.aggregation.gait:main"
-ravenna-aggregate-activity-intensity = "ravenna_pipeline.aggregation.activity_intensity:main"
-ravenna-aggregate-all = "ravenna_pipeline.aggregation.overall:main"
+gp-empatica-sleep = "fallspredict_gp_pipeline.cli.empatica_sleep:main"
+ravenna-sleep = "fallspredict_pipeline.cli.ravenna_sleep:main"
+gp-lower-back = "fallspredict_gp_pipeline.cli.lower_back:main"
+ravenna-lower-back = "fallspredict_pipeline.cli.lower_back:main"
+gp-hrv = "fallspredict_gp_pipeline.cli.hrv:main"
+gp-heart-rate = "fallspredict_gp_pipeline.cli.heart_rate:main"
+gp-aggregate-sleep = "fallspredict_gp_pipeline.aggregation.sleep:main"
+gp-aggregate-hrv = "fallspredict_gp_pipeline.aggregation.hrv:main"
+gp-aggregate-heart-rate = "fallspredict_gp_pipeline.aggregation.heart_rate:main"
+gp-aggregate-gait = "fallspredict_gp_pipeline.aggregation.gait:main"
+gp-aggregate-activity-intensity = "fallspredict_gp_pipeline.aggregation.activity_intensity:main"
+gp-aggregate-all = "fallspredict_gp_pipeline.aggregation.overall:main"
+gp-aggregate-redcap = "fallspredict_gp_pipeline.aggregation.redcap:main"
+gp-aggregate-cohorts = "fallspredict_gp_pipeline.aggregation.cohorts:main"
+ravenna-aggregate-sleep = "fallspredict_pipeline.aggregation.sleep:main"
+ravenna-aggregate-gait = "fallspredict_pipeline.aggregation.gait:main"
+ravenna-aggregate-activity-intensity = "fallspredict_pipeline.aggregation.activity_intensity:main"
+ravenna-aggregate-all = "fallspredict_pipeline.aggregation.overall:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -86,5 +86,5 @@ include-package-data = false
 [tool.setuptools.packages.find]
 where = ["src"]
 namespaces = false
-include = ["dare_wearables*", "gp_pipeline*", "ravenna_pipeline*"]
+include = ["dare_wearables*", "fallspredict_gp_pipeline*", "fallspredict_pipeline*"]
 exclude = ["*.outputs", "*.outputs.*", "*.data", "*.data.*"]

@@ -76,7 +76,7 @@ def write_sleep_exports(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Aggregate Ravenna sleep and circadian silver-layer outputs.")
+    parser = argparse.ArgumentParser(description="Aggregate DARE-FALLSPREDICT sleep and circadian silver-layer outputs.")
     parser.add_argument(
         "--silver-root",
         default=str(DEFAULT_SILVER_ROOT),

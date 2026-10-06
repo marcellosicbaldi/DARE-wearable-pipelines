@@ -1,4 +1,4 @@
-"""Wrist sleep algorithms and Ravenna GENEActiv pipeline entry points."""
+"""Wrist sleep algorithms and DARE-FALLSPREDICT GENEActiv pipeline entry points."""
 
 from .sleep_pipeline_ravenna import (
     run_sleep_and_circadian_pipeline_ravenna,

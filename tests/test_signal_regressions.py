@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-PACKAGES = ('gp_pipeline', 'ravenna_pipeline')
+PACKAGES = ('fallspredict_gp_pipeline', 'fallspredict_pipeline')
 
 
 def packet(sensor, second=0, value=100, count=10):

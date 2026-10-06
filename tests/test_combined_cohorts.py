@@ -8,14 +8,14 @@ from unittest.mock import patch
 
 import pandas as pd
 
-from gp_pipeline.aggregation.cohorts import (
+from fallspredict_gp_pipeline.aggregation.cohorts import (
     build_parser as build_cohorts_parser,
     build_combined_dataset, combine_cohort_frames,
     load_sensor_exports, read_sensor_export, write_combined_exports,
 )
-from gp_pipeline.aggregation.redcap import build_parser, merge_redcap_with_sensors, process_redcap
-from gp_pipeline.aggregation.analysis_exclusions import EXCLUDED_ANALYSIS_COLUMNS
-from gp_pipeline.redcap.cohorts import default_redcap_csv
+from fallspredict_gp_pipeline.aggregation.redcap import build_parser, merge_redcap_with_sensors, process_redcap
+from fallspredict_gp_pipeline.aggregation.analysis_exclusions import EXCLUDED_ANALYSIS_COLUMNS
+from fallspredict_gp_pipeline.redcap.cohorts import default_redcap_csv
 from test_redcap import baseline
 
 
@@ -187,8 +187,8 @@ class CombinedCohortsTests(unittest.TestCase):
         # Mock the Excel engine; the real input workbook shapes/headers were
         # inspected separately without rerunning the participant aggregation.
         frame = pd.DataFrame({"subject": ["12.0"], "visit": ["T0"], "sensor": [3.]})
-        with patch("gp_pipeline.aggregation.cohorts.pd.ExcelFile") as excel, \
-             patch("gp_pipeline.aggregation.cohorts.pd.read_excel", return_value=frame):
+        with patch("fallspredict_gp_pipeline.aggregation.cohorts.pd.ExcelFile") as excel, \
+             patch("fallspredict_gp_pipeline.aggregation.cohorts.pd.read_excel", return_value=frame):
             excel.return_value.__enter__.return_value.sheet_names = ["export.csv"]
             result = read_sensor_export(self.ra / "sleep.xlsx", cohort="RA")
             self.assertEqual(result.subject.tolist(), ["0012"])
@@ -219,12 +219,14 @@ class CombinedCohortsTests(unittest.TestCase):
         self.assertFalse(any(c.startswith("redcap__") for c in data))
 
     def test_cohort_validation_and_ra_default_redcap_path(self):
+        # Renaming display labels must not redirect existing clinical inputs.
+        self.assertEqual(default_redcap_csv("BO").parent.name, "Bologna")
         self.assertIn("Ravenna", str(default_redcap_csv("RA")))
         self.assertEqual(build_parser().parse_args(["--cohort", "RA", "--output-dir", "unused"]).cohort, "RA")
         with self.assertRaises(ValueError):
             process_redcap(cohort="invalid", fratup_dir=None)
         self.fixture()
-        with patch("gp_pipeline.aggregation.redcap.default_redcap_csv", return_value=self.ra / "redcap.csv") as default:
+        with patch("fallspredict_gp_pipeline.aggregation.redcap.default_redcap_csv", return_value=self.ra / "redcap.csv") as default:
             result = process_redcap(cohort="RA", fratup_dir=self.fratup)
         default.assert_called_once_with("RA")
         self.assertEqual(result.clinical.group.tolist(), ["RA"])

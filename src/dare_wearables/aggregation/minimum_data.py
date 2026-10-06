@@ -36,8 +36,8 @@ def _mask_measurements(out: pd.DataFrame, columns: list[str], count_column: str)
         raise ValueError(
             f"Cannot enforce the three-day/night minimum: populated {columns[0]} "
             f"has no usable {count_column}. Refresh the source sensor aggregation "
-            "before rebuilding the combined dataset (Bologna: python -m "
-            "gp_pipeline.aggregation.overall --sleep-method both)."
+            "before rebuilding the combined dataset (DARE-FALLSPREDICT GP: python -m "
+            "fallspredict_gp_pipeline.aggregation.overall --sleep-method both)."
         )
     insufficient = counts.lt(MIN_VALID_OBSERVATIONS).fillna(False)
     for column in columns:

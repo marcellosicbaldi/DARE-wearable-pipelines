@@ -8,7 +8,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
-PACKAGES = ('gp_pipeline', 'ravenna_pipeline')
+PACKAGES = ('fallspredict_gp_pipeline', 'fallspredict_pipeline')
 
 
 def recording(start='2024-01-01 12:00', count=400):

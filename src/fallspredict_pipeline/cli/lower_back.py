@@ -7,7 +7,7 @@ from ..lower_back.pipeline import run_from_config
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run the Ravenna lower-back IMU pipeline.")
+    parser = argparse.ArgumentParser(description="Run the DARE-FALLSPREDICT lower-back IMU pipeline.")
     parser.add_argument(
         "--config",
         default="configs/ravenna_lower_back.local.toml",

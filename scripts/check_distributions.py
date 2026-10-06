@@ -12,7 +12,7 @@ import zipfile
 
 from check_publication import check_content
 
-PACKAGES = ('dare_wearables', 'gp_pipeline', 'ravenna_pipeline')
+PACKAGES = ('dare_wearables', 'fallspredict_gp_pipeline', 'fallspredict_pipeline')
 
 
 def check_archive(path: Path, *, expected_version: str) -> list[str]:
@@ -51,6 +51,8 @@ def check_archive(path: Path, *, expected_version: str) -> list[str]:
     for name, payload in files.items():
         relative = name.removeprefix(prefix)
         p = PurePosixPath(relative)
+        if any(part in {'gp_pipeline', 'ravenna_pipeline'} for part in p.parts):
+            issues.append(f'obsolete package path: {relative}')
         if p.is_absolute() or '..' in p.parts:
             issues.append('unsafe archive path')
             continue

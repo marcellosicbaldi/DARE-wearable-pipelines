@@ -4,7 +4,8 @@ from pathlib import Path
 
 
 DATA_ROOT = Path("~/dare-data").expanduser()
-COHORT_NAMES = {"BO": "Bologna", "RA": "Ravenna"}
+COHORT_FOLDERS = {"BO": "Bologna", "RA": "Ravenna"}
+COHORT_NAMES = {"BO": "DARE-FALLSPREDICT GP", "RA": "DARE-FALLSPREDICT"}
 
 
 def validate_cohort(cohort: str) -> str:
@@ -14,4 +15,4 @@ def validate_cohort(cohort: str) -> str:
 
 
 def default_redcap_csv(cohort: str) -> Path:
-    return DATA_ROOT / "REDCap" / COHORT_NAMES[validate_cohort(cohort)] / "fallspredict_data.csv"
+    return DATA_ROOT / "REDCap" / COHORT_FOLDERS[validate_cohort(cohort)] / "fallspredict_data.csv"

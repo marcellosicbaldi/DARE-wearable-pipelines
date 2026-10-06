@@ -1,8 +1,18 @@
 # Changelog
 
+## 0.2.0 — 2026-10-06
+
+- Rename the studies to DARE-FALLSPREDICT GP and DARE-FALLSPREDICT.
+- Rename Python packages: `gp_pipeline` → `fallspredict_gp_pipeline`, and
+  `ravenna_pipeline` → `fallspredict_pipeline`. Update Python imports and
+  `python -m` invocations when upgrading from 0.1.0.
+- Retain existing console command names, configuration filenames, input/output
+  paths and cohort codes (`BO`/`RA`) for compatibility with existing analyses.
+- Separate study display names from legacy REDCap folder names.
+
 ## 0.1.0 — 2026-10-06
 
-First consolidated release for the Bologna and Ravenna wearable
+First consolidated release for the DARE-FALLSPREDICT GP and DARE-FALLSPREDICT wearable
 processing workflows.
 
 - Shared `dare_wearables` core with separate cohort configuration and commands.

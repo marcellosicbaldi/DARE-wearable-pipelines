@@ -384,7 +384,7 @@ def write_redcap_exports(
               "fratup_inputs": result.fratup_inputs, "fratup_import": result.fratup_import}
     if reference_csv is not None:
         if cohort != "BO":
-            raise ValueError("The May reference comparison is defined for Bologna only.")
+            raise ValueError("The May reference comparison is defined for DARE-FALLSPREDICT GP only.")
         tables["reference_comparison"] = compare_reference(result.clinical, reference_csv)
     if sensor_csv is not None:
         clinical = result.clinical.merge(result.followup_wide, on="subject", validate="one_to_one")

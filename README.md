@@ -2,7 +2,7 @@
 
 [![Distribution checks](https://github.com/marcellosicbaldi/DARE-wearable-pipelines/actions/workflows/ci.yml/badge.svg)](https://github.com/marcellosicbaldi/DARE-wearable-pipelines/actions/workflows/ci.yml)
 
-Research wearable workflows for the Bologna and Ravenna studies:
+Research wearable workflows for the DARE-FALLSPREDICT GP and DARE-FALLSPREDICT studies:
 
 - Empatica wrist sleep, circadian rhythm, activity intensity, heart rate and HRV
 - GENEActiv wrist sleep, circadian rhythm and activity intensity
@@ -14,7 +14,17 @@ for the reviewed processing errors and an extracted shared processing core.
 Installation uses a locked environment, and GitHub Actions validates the
 distribution. The project is MIT-licensed, with incorporated-source notices
 preserved alongside the code.
-The existing `gp_pipeline` / `ravenna_pipeline` console commands are retained.
+The existing `fallspredict_gp_pipeline` / `fallspredict_pipeline` console commands are retained.
+
+## Upgrade from 0.1.0
+
+Python imports now use `fallspredict_gp_pipeline` (DARE-FALLSPREDICT GP) and
+`fallspredict_pipeline` (DARE-FALLSPREDICT). Replace the former `gp_pipeline`
+and `ravenna_pipeline` prefixes in Python code and `python -m` commands.
+Existing console commands (`gp-*`, `ravenna-*`), configuration filenames,
+`BO`/`RA` cohort codes and legacy data-folder names remain compatible. Folder
+names such as `REDCap/Bologna` and `REDCap/Ravenna` describe existing input
+layouts, not the current study display names.
 
 ## Contents
 
@@ -23,7 +33,7 @@ configs/       Generic example configurations; no private study settings
 docs/          Processing and data-contract documentation
 notebooks/     Four unexecuted entry-point examples
 scripts/       Publication-content checks
-src/           Shared core and Bologna/Ravenna adapters
+src/           Shared core and DARE-FALLSPREDICT GP/DARE-FALLSPREDICT adapters
 tests/         Synthetic regression tests
 ```
 
@@ -40,8 +50,8 @@ fixes and make the two implementations drift.
 ```text
 src/dare_wearables/     Sensor readers, preprocessing, algorithms, shared runners,
                        clinical processing and aggregation calculations
-src/gp_pipeline/        Bologna configuration, commands and default paths
-src/ravenna_pipeline/   Ravenna configuration, commands and GENEActiv orchestration
+src/fallspredict_gp_pipeline/  DARE-FALLSPREDICT GP configuration, commands and default paths
+src/fallspredict_pipeline/     DARE-FALLSPREDICT configuration, commands and GENEActiv orchestration
 ```
 
 Both adapters depend on `dare_wearables`; the core imports neither cohort.
@@ -101,8 +111,8 @@ then edit that local file with your private paths and participant selection.
 Local configuration files are ignored by Git and excluded from distributions.
 Examples use the fictional identifier `900001`; no example data is supplied.
 
-Bologna data paths currently require absolute paths, with a leading `~`
-expanded to your home directory. Ravenna config-relative paths are resolved
+DARE-FALLSPREDICT GP data paths currently require absolute paths, with a leading `~`
+expanded to your home directory. DARE-FALLSPREDICT config-relative paths are resolved
 from the configuration file's folder. Relative `--config` paths resolve from
 your current working directory, including after wheel installation. Generic aggregation defaults use
 `~/dare-data`; override them with the command's path arguments as needed.
@@ -130,7 +140,7 @@ Empatica sleep expects `silver/<participant>/<visit>/Empatica/acc.parquet` and
 sleep windows from `Empatica/sleep_circadian/sleep_output_all_guiders.csv`.
 Optional diary, recruitment tracker and lower-back TIB inputs are configured
 privately. GENEActiv expects a participant/visit `.bin` recording; see the
-[Ravenna input conventions](src/ravenna_pipeline/README.md).
+[DARE-FALLSPREDICT input conventions](src/fallspredict_pipeline/README.md).
 
 Lower-back processing expects `bronze/<participant>/<visit>/<sensor>/*.OMX`
 and requires REDCap metadata for gait processing. Its outputs include daily

@@ -15,12 +15,12 @@ imply that the full scientific environment works on every platform.
 ## Install a reviewed revision
 
 Download the source archive from the desired GitHub release, or clone the
-repository and check out its release tag. For version 0.1.0:
+repository and check out its release tag. For version 0.2.0:
 
 ```bash
 git clone https://github.com/marcellosicbaldi/DARE-wearable-pipelines.git
 cd DARE-wearable-pipelines
-git checkout v0.1.0
+git checkout v0.2.0
 ```
 
 Install uv 0.12.23, then run:
@@ -44,8 +44,8 @@ build and metadata-check tools are only needed by maintainers.
 
 Copy the required `configs/*.example.toml` files to ignored `*.local.toml` files
 and edit private paths. A relative `--config` path is relative to your shell's
-current directory. Bologna paths within the TOML must be absolute (or use `~`);
-Ravenna retains its config-relative/input-root rules documented in its README.
+current directory. DARE-FALLSPREDICT GP paths within the TOML must be absolute (or use `~`);
+DARE-FALLSPREDICT retains its config-relative/input-root rules documented in its README.
 
 The lockfile pins transitive dependencies and artifact hashes. It is not proof
 of clinical equivalence, cross-platform numerical identity or validation on
@@ -60,11 +60,11 @@ from the same release. Verify its SHA-256 checksum before installing:
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
-python -m pip install ./dare_wearable_pipelines-0.1.0-py3-none-any.whl
+python -m pip install ./dare_wearable_pipelines-0.2.0-py3-none-any.whl
 ```
 
 For heart rate, use
-`python -m pip install './dare_wearable_pipelines-0.1.0-py3-none-any.whl[heart-rate]'`.
+`python -m pip install './dare_wearable_pipelines-0.2.0-py3-none-any.whl[heart-rate]'`.
 Pip resolves transitive dependencies at installation time. For exact versions,
 prefer the source release and `uv sync --locked`. Example configurations,
 documentation and the lockfile are in the source archive; the wheel contains

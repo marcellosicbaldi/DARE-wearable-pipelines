@@ -10,12 +10,12 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from gp_pipeline.aggregation.redcap import (
+from fallspredict_gp_pipeline.aggregation.redcap import (
     compare_reference, load_redcap, merge_redcap_with_sensors,
     normalize_subjects, process_redcap, write_redcap_exports,
 )
-from gp_pipeline.redcap.schema import ATC_COLUMNS, DISEASE_COLUMNS, NON_SENSOR_COLUMNS
-from gp_pipeline.redcap.scores import (
+from fallspredict_gp_pipeline.redcap.schema import ATC_COLUMNS, DISEASE_COLUMNS, NON_SENSOR_COLUMNS
+from fallspredict_gp_pipeline.redcap.scores import (
     CESD_REGULAR, CESD_REVERSED, FES_ITEMS, MMSE_ITEMS,
     PSQI_ITEMS, mmse_corrected_notebook, psqi_notebook, wfg_notebook,
 )
@@ -240,11 +240,11 @@ class RedcapTests(unittest.TestCase):
         pd.testing.assert_frame_equal(raw, pd.read_csv(collision, dtype="string", keep_default_na=False))
 
     def test_overall_integration_and_sensor_only_behavior(self):
-        from gp_pipeline.aggregation.overall import aggregate_all, write_all_exports
+        from fallspredict_gp_pipeline.aggregation.overall import aggregate_all, write_all_exports
         source = self.source([baseline()])
         sensors = pd.DataFrame({"subject": ["7"], "visit": ["T0"], "sleep_value": [10]})
-        with patch("gp_pipeline.aggregation.overall.aggregate_sleep", return_value=sensors), \
-             patch("gp_pipeline.aggregation.overall._build_non_sleep_domain_frames", return_value=[]), \
+        with patch("fallspredict_gp_pipeline.aggregation.overall.aggregate_sleep", return_value=sensors), \
+             patch("fallspredict_gp_pipeline.aggregation.overall._build_non_sleep_domain_frames", return_value=[]), \
              warnings.catch_warnings():
             warnings.simplefilter("ignore")
             pd.testing.assert_frame_equal(aggregate_all(), sensors)

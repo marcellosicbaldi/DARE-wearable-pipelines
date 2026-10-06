@@ -42,8 +42,8 @@ LrcUllrich(**LrcUllrich.PredefinedParameters.msproject_all)
 from dare_wearables.common.paths import resolve_path
 from pathlib import Path
 assert resolve_path('configs/example.toml') == Path.cwd() / 'configs/example.toml'
-from gp_pipeline.config import EmpaticaSleepConfig
-from ravenna_pipeline.config import RavennaSleepConfig
+from fallspredict_gp_pipeline.config import EmpaticaSleepConfig
+from fallspredict_pipeline.config import RavennaSleepConfig
 from dare_wearables.wrist.heart_rate_variability.pipeline import run_hrv_pipeline
 '''
         subprocess.run([sys.executable, '-c', script], cwd=tmp, env=env, check=True, timeout=90)

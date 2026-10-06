@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from gp_pipeline.aggregation.analysis_exclusions import AnalysisExclusions, resolve_analysis_exclusions
-from gp_pipeline.aggregation.cohorts import build_parser
+from fallspredict_gp_pipeline.aggregation.analysis_exclusions import AnalysisExclusions, resolve_analysis_exclusions
+from fallspredict_gp_pipeline.aggregation.cohorts import build_parser
 
 
 class PrivateConfigurationTests(unittest.TestCase):

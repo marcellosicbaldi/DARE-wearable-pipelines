@@ -1,5 +1,5 @@
 # No real participant identifiers or institution-specific paths are included.
-# Ravenna lower-back configuration.
+# DARE-FALLSPREDICT lower-back configuration.
 # Relative paths are resolved from this config file's folder.
 
 [lower_back]

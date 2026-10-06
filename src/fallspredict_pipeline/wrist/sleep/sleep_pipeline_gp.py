@@ -1,4 +1,4 @@
-"""Legacy Empatica API retained for Ravenna callers of the former copy."""
+"""Legacy Empatica API retained for DARE-FALLSPREDICT callers of the former copy."""
 from pathlib import Path
 from typing import Dict, Optional
 from dare_wearables.wrist.sleep import pipeline as _implementation

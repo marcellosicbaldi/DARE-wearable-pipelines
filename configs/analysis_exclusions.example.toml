@@ -1,7 +1,7 @@
 # Copy to analysis_exclusions.local.toml and enter private study decisions.
 # This distributable example deliberately contains no participant IDs.
-# RMSSD/SDNN exclusions apply only to Bologna T0.
-# Sleep/circadian/activity exclusions apply only to Ravenna T0.
+# RMSSD/SDNN exclusions apply only to DARE-FALLSPREDICT GP T0.
+# Sleep/circadian/activity exclusions apply only to DARE-FALLSPREDICT T0.
 [manual_exclusions]
 rmssd_sdnn_ids = []
 sleep_circadian_ids = []

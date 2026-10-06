@@ -47,7 +47,7 @@ def find_geneactiv_bin_file(
     """
     Locate one GENEActiv .bin file for a participant/visit.
 
-    The Ravenna data were not present when this adapter was written, so this
+    The DARE-FALLSPREDICT data were not present when this adapter was written, so this
     finder accepts a direct file path and also searches the common layouts used
     by the GP pipeline.
     """

@@ -1,7 +1,7 @@
-"""Combine locally exported Bologna/Ravenna sensors with each cohort's REDCap.
+"""Combine locally exported DARE-FALLSPREDICT GP/DARE-FALLSPREDICT sensors with each cohort's REDCap.
 
 This final stage reads CSV/XLSX subject-level exports. It never runs sensor
-processing, accesses the Ravenna server, or executes FRAT-up's private R code.
+processing, accesses the DARE-FALLSPREDICT server, or executes FRAT-up's private R code.
 """
 
 from __future__ import annotations

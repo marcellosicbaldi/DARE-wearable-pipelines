@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import sys
-import warnings
 import traceback
 from datetime import datetime
 from pathlib import Path
@@ -27,9 +27,7 @@ SRC_ROOT = PROJECT_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-warnings.filterwarnings("ignore", category=FutureWarning, module="openpyxl")
-
-DEFAULT_LOG_FILE = PROJECT_ROOT / "logs" / "ravenna_wrist_pipeline_errors.txt"
+DEFAULT_LOG_FILE = PROJECT_ROOT / "logs" / "ravenna_lower_back_pipeline_errors.txt"
 
 
 def _remove_wheel_files_from_path() -> list[str]:
@@ -45,7 +43,7 @@ def _remove_wheel_files_from_path() -> list[str]:
     return removed
 
 
-_remove_wheel_files_from_path()
+REMOVED_WHEEL_PATHS = _remove_wheel_files_from_path()
 
 
 def _discover_wheelhouse() -> Path | None:
@@ -84,10 +82,10 @@ def _add_wheelhouse_to_path(wheelhouse: Path | None) -> None:
     _remove_wheel_files_from_path()
 
 
-def _discover_participants(input_root: Path) -> list[str]:
-    if not input_root.exists() or not input_root.is_dir():
+def _discover_participants(bronze_root: Path) -> list[str]:
+    if not bronze_root.exists() or not bronze_root.is_dir():
         return []
-    return sorted(path.name for path in input_root.iterdir() if path.is_dir())
+    return sorted(path.name for path in bronze_root.iterdir() if path.is_dir())
 
 
 def _slice_participants(
@@ -117,37 +115,50 @@ def _log_exception(log_file: Path, context: str, exc: BaseException) -> None:
         handle.write("\n" + "=" * 80 + "\n")
         handle.write(f"{datetime.now().isoformat(timespec='seconds')} | {context}\n")
         handle.write(f"{type(exc).__name__}: {exc}\n\n")
+        handle.write(_import_diagnostics())
+        handle.write("\n\n")
         handle.write(traceback.format_exc())
         handle.write("\n")
 
 
+def _import_diagnostics() -> str:
+    mobgap_spec = importlib.util.find_spec("mobgap")
+    numpy_spec = importlib.util.find_spec("numpy")
+    lines = [
+        "Import diagnostics:",
+        f"  Python executable: {sys.executable}",
+        f"  Python version: {sys.version}",
+        f"  Removed .whl sys.path entries: {REMOVED_WHEEL_PATHS or 'none'}",
+        f"  mobgap spec: {mobgap_spec.origin if mobgap_spec else 'NOT FOUND'}",
+        f"  numpy spec: {numpy_spec.origin if numpy_spec else 'NOT FOUND'}",
+        "  sys.path:",
+    ]
+    lines.extend(f"    - {path}" for path in sys.path)
+    return "\n".join(lines)
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Run Ravenna GENEActiv wrist sleep/circadian/activity pipeline."
-    )
+    parser = argparse.ArgumentParser(description="Run DARE-FALLSPREDICT lower-back pipeline.")
     parser.add_argument(
         "--config",
         type=Path,
-        default=PROJECT_ROOT / "configs" / "ravenna_sleep.local.toml",
-        help="Path to configs/ravenna_sleep.local.toml.",
+        default=PROJECT_ROOT / "configs" / "ravenna_lower_back.local.toml",
+        help="Path to configs/ravenna_lower_back.local.toml.",
     )
     parser.add_argument(
         "--participant",
         action="append",
         dest="participants",
-        help="Participant identifier. Repeat to run multiple participants. Defaults to folders in input_root.",
-    )
-    parser.add_argument("--visit", help="Visit override, for example T0 or T1.")
-    parser.add_argument(
-        "--input-root",
-        type=Path,
-        help="Override the GENEActiv input root from the TOML.",
+        help="Participant identifier. Repeat to run multiple participants. Defaults to folders in bronze_root.",
     )
     parser.add_argument(
-        "--output-root",
-        type=Path,
-        help="Override the output root from the TOML.",
+        "--visit",
+        action="append",
+        dest="visits",
+        help="Visit override. Repeat for multiple visits.",
     )
+    parser.add_argument("--bronze-root", type=Path, help="Override lower_back.bronze_root.")
+    parser.add_argument("--silver-root", type=Path, help="Override lower_back.silver_root.")
     parser.add_argument(
         "--wheelhouse",
         type=Path,
@@ -164,25 +175,26 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         help="Process at most this many participants after start-index.",
     )
+    parser.add_argument("--skip-gait", action="store_true", help="Do not run gait outputs.")
     parser.add_argument(
-        "--sleep-only",
+        "--skip-time-in-bed",
         action="store_true",
-        help="Run only the sleep pipeline. Default is sleep + circadian + activity-intensity.",
+        help="Do not run posture/time-in-bed outputs.",
     )
     parser.add_argument(
-        "--skip-existing",
+        "--save-omx-to-parquet",
         action="store_true",
-        help="Skip participants with sleep_output_all_guiders.csv already present.",
-    )
-    parser.add_argument(
-        "--no-lower-back-tib",
-        action="store_true",
-        help="Do not attach the lower-back tib_valid_df.csv guider for each participant.",
+        help="Save the preprocessed OMX parquet file, overriding the TOML setting.",
     )
     parser.add_argument(
         "--print-config",
         action="store_true",
         help="Print the loaded config before running.",
+    )
+    parser.add_argument(
+        "--diagnose-imports",
+        action="store_true",
+        help="Print Python executable, numpy location, mobgap location, and sys.path, then exit.",
     )
     parser.add_argument(
         "--log-file",
@@ -199,42 +211,49 @@ def main() -> None:
     wheelhouse = args.wheelhouse.expanduser().resolve() if args.wheelhouse else _discover_wheelhouse()
     _add_wheelhouse_to_path(wheelhouse)
 
-    from ravenna_pipeline.config import RavennaSleepConfig
-    from ravenna_pipeline.wrist.pipeline import (
-        build_output_dir,
-        run_sleep_and_circadian_from_config,
-        run_sleep_pipeline_from_config,
-    )
+    if args.diagnose_imports:
+        print(_import_diagnostics())
+        return
 
-    config = RavennaSleepConfig.from_toml(args.config)
-    if args.input_root is not None:
-        config.input_root = args.input_root.expanduser().resolve()
-    if args.output_root is not None:
-        config.output_root = args.output_root.expanduser().resolve()
-    if args.visit is not None:
-        config.visit = args.visit
+    from fallspredict_pipeline.config import LowerBackConfig
+    from fallspredict_pipeline.lower_back.pipeline import run_from_config
 
-    if args.print_config:
-        print(config)
+    config = LowerBackConfig.from_toml(args.config)
+    if args.bronze_root is not None:
+        config.bronze_root = args.bronze_root.expanduser().resolve()
+    if args.silver_root is not None:
+        config.silver_root = args.silver_root.expanduser().resolve()
+    if args.visits:
+        config.visits = [str(visit) for visit in args.visits]
+    if args.skip_gait:
+        config.run_gait = False
+    if args.skip_time_in_bed:
+        config.run_time_in_bed = False
+    if args.save_omx_to_parquet:
+        config.save_omx_to_parquet = True
 
     if args.participants:
         participants = [str(participant) for participant in args.participants]
     else:
-        participants = _discover_participants(config.input_root)
+        participants = _discover_participants(config.bronze_root)
         participants = _slice_participants(
             participants,
             start_index=args.start_index,
             limit=args.limit,
         )
-        if not participants and config.participant:
-            participants = [config.participant]
+        if not participants and config.participant_ids:
+            participants = [str(participant) for participant in config.participant_ids]
 
     if not participants:
         raise ValueError(
-            "No participants found. Pass --participant or check ravenna_sleep.input_root."
+            "No participants found. Pass --participant or check lower_back.bronze_root."
         )
 
-    visit = config.visit
+    config.participant_ids = participants
+
+    if args.print_config:
+        print(config)
+
     print(f"Project root: {PROJECT_ROOT}")
     if wheelhouse is not None:
         print(f"Using wheelhouse: {wheelhouse}")
@@ -243,40 +262,18 @@ def main() -> None:
 
     for participant in participants:
         try:
-            print(f"\nProcessing wrist participant {participant}...")
-            config.participant = participant
-
-            if args.no_lower_back_tib:
-                config.lb_tib_csv_path = None
-            else:
-                config.lb_tib_csv_path = (
-                    Path(config.output_root)
-                    / participant
-                    / visit
-                    / "McRoberts"
-                    / "posture"
-                    / "tib_valid_df.csv"
-                )
-
-            output_dir = build_output_dir(
-                config.output_root,
-                participant=participant,
-                visit=visit,
-                sensor=config.sensor,
-            )
-            if args.skip_existing and (output_dir / "sleep_output_all_guiders.csv").exists():
-                print(f"Output already exists for {participant} {visit}. Skipping: {output_dir}")
-                continue
-
-            if args.sleep_only:
-                run_sleep_pipeline_from_config(config, participant=participant, visit=visit)
-            else:
-                run_sleep_and_circadian_from_config(config, participant=participant, visit=visit)
-
-            print(f"Completed wrist participant {participant}. Outputs: {output_dir}")
+            print(f"\nProcessing lower-back participant {participant}...")
+            config.participant_ids = [participant]
+            run_from_config(config)
+            print(f"Completed lower-back participant {participant}.")
         except Exception as exc:
-            _log_exception(log_file, f"wrist participant={participant} visit={visit}", exc)
-            print(f"ERROR for wrist participant {participant}. Logged to: {log_file}")
+            visits = ",".join(config.visits)
+            _log_exception(
+                log_file,
+                f"lower-back participant={participant} visits={visits}",
+                exc,
+            )
+            print(f"ERROR for lower-back participant {participant}. Logged to: {log_file}")
             continue
 
 
@@ -285,6 +282,6 @@ if __name__ == "__main__":
         main()
     except Exception as exc:
         log_file = _get_log_file_from_argv(DEFAULT_LOG_FILE)
-        _log_exception(log_file, "fatal wrist pipeline error", exc)
+        _log_exception(log_file, "fatal lower-back pipeline error", exc)
         print(f"FATAL ERROR. Logged to: {log_file}")
         raise

@@ -1,13 +1,13 @@
 # DARE wearable processing architecture
 
-Bologna and Ravenna are sibling adapters over one shared core. Keep cohort
+DARE-FALLSPREDICT GP and DARE-FALLSPREDICT are sibling adapters over one shared core. Keep cohort
 configuration and sensor discovery in the adapters and common calculations in
 `dare_wearables`. The dependency arrows point from the adapters into the core.
 
 ```mermaid
 flowchart TD
-    BO["gp_pipeline: Bologna configuration and commands"] --> CORE
-    RA["ravenna_pipeline: Ravenna configuration and commands"] --> CORE
+    BO["fallspredict_gp_pipeline: DARE-FALLSPREDICT GP configuration and commands"] --> CORE
+    RA["fallspredict_pipeline: DARE-FALLSPREDICT configuration and commands"] --> CORE
     subgraph CORE["dare_wearables: shared processing core"]
         EMP["Empatica preprocessing"] --> PRE["Prepared wrist data"]
         GEN["GENEActiv preprocessing"] --> PRE
@@ -21,11 +21,11 @@ flowchart TD
     end
 ```
 
-## Bologna workflow detail
+## DARE-FALLSPREDICT GP workflow detail
 
-The following diagram describes the Bologna entry points and processing stages.
-The historical `gp_pipeline` module paths remain compatibility entry points into
-the shared core. Ravenna substitutes GENEActiv preprocessing and its own default
+The following diagram describes the DARE-FALLSPREDICT GP entry points and processing stages.
+The historical `fallspredict_gp_pipeline` module paths remain compatibility entry points into
+the shared core. DARE-FALLSPREDICT substitutes GENEActiv preprocessing and its own default
 paths while using the same wrist and lower-back calculations.
 
 ```mermaid
@@ -269,8 +269,8 @@ flowchart TD
 - Workflow notebooks: `notebooks/run_lower_back_pipeline.ipynb`, `notebooks/run_wrist_sleep_pipeline.ipynb`, `notebooks/run_heart_rate_pipeline.ipynb`, and `notebooks/run_hrv_pipeline.ipynb`.
 - CLI entry points: `gp-lower-back`, `gp-empatica-sleep`, `gp-heart-rate`, `gp-hrv`, and the `gp-aggregate-*` commands declared in `pyproject.toml`.
 - Configuration files: `configs/lower_back.local.toml`, `configs/empatica_sleep.local.toml`, `configs/heart_rate.local.toml`, and `configs/hrv.local.toml`.
-- Lower-back source modules: `src/gp_pipeline/lower_back/io.py`, `src/gp_pipeline/lower_back/pipeline.py`, and `src/gp_pipeline/lower_back/processing/*`.
-- Wrist sleep, circadian, and activity source modules: `src/gp_pipeline/wrist/empatica/pipeline.py`, `src/gp_pipeline/wrist/empatica/config.py`, `src/gp_pipeline/wrist/empatica/sleep.py`, `src/gp_pipeline/wrist/empatica/circadian.py`, and `src/gp_pipeline/wrist/empatica/activity_intensity.py`.
-- Heart-rate source modules: `src/gp_pipeline/wrist/heart_rate/pipeline.py`, `src/gp_pipeline/wrist/heart_rate/config.py`, and `src/gp_pipeline/wrist/heart_rate/io.py`.
-- HRV source modules and documentation: `docs/hrv_pipeline.md`, `src/gp_pipeline/wrist/hrv/config.py`, `src/gp_pipeline/wrist/hrv/io.py`, `src/gp_pipeline/wrist/hrv/pipeline.py`, and `src/gp_pipeline/wrist/hrv/processing.py`.
-- Aggregation modules: `src/gp_pipeline/aggregation/sleep.py`, `src/gp_pipeline/aggregation/hrv.py`, `src/gp_pipeline/aggregation/heart_rate.py`, `src/gp_pipeline/aggregation/gait.py`, `src/gp_pipeline/aggregation/activity_intensity.py`, and `src/gp_pipeline/aggregation/overall.py`.
+- Lower-back source modules: `src/fallspredict_gp_pipeline/lower_back/io.py`, `src/fallspredict_gp_pipeline/lower_back/pipeline.py`, and `src/fallspredict_gp_pipeline/lower_back/processing/*`.
+- Wrist sleep, circadian, and activity source modules: `src/fallspredict_gp_pipeline/wrist/empatica/pipeline.py`, `src/fallspredict_gp_pipeline/wrist/empatica/config.py`, `src/fallspredict_gp_pipeline/wrist/empatica/sleep.py`, `src/fallspredict_gp_pipeline/wrist/empatica/circadian.py`, and `src/fallspredict_gp_pipeline/wrist/empatica/activity_intensity.py`.
+- Heart-rate source modules: `src/fallspredict_gp_pipeline/wrist/heart_rate/pipeline.py`, `src/fallspredict_gp_pipeline/wrist/heart_rate/config.py`, and `src/fallspredict_gp_pipeline/wrist/heart_rate/io.py`.
+- HRV source modules and documentation: `docs/hrv_pipeline.md`, `src/fallspredict_gp_pipeline/wrist/hrv/config.py`, `src/fallspredict_gp_pipeline/wrist/hrv/io.py`, `src/fallspredict_gp_pipeline/wrist/hrv/pipeline.py`, and `src/fallspredict_gp_pipeline/wrist/hrv/processing.py`.
+- Aggregation modules: `src/fallspredict_gp_pipeline/aggregation/sleep.py`, `src/fallspredict_gp_pipeline/aggregation/hrv.py`, `src/fallspredict_gp_pipeline/aggregation/heart_rate.py`, `src/fallspredict_gp_pipeline/aggregation/gait.py`, `src/fallspredict_gp_pipeline/aggregation/activity_intensity.py`, and `src/fallspredict_gp_pipeline/aggregation/overall.py`.

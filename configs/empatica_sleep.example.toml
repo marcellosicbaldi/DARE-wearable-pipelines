@@ -1,6 +1,6 @@
 # No real participant identifiers or institution-specific paths are included.
 # Example only. Copy to empatica_sleep.local.toml and set private paths.
-# Bologna data paths must be absolute (a leading ~ is expanded).
+# DARE-FALLSPREDICT GP data paths must be absolute (a leading ~ is expanded).
 
 [empatica_sleep]
 silver_root = "~/dare-data/silver"

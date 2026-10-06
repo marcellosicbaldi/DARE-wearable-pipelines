@@ -1,4 +1,4 @@
-"""Regression coverage for mixed legacy Bologna and current daily gait formats."""
+"""Regression coverage for mixed legacy DARE-FALLSPREDICT GP and current daily gait formats."""
 
 from pathlib import Path
 import tempfile
@@ -6,9 +6,9 @@ import unittest
 
 import pandas as pd
 
-from gp_pipeline.aggregation.gait import aggregate_gait as aggregate_bologna
-from gp_pipeline.aggregation.minimum_data import apply_minimum_observations
-from ravenna_pipeline.aggregation.gait import aggregate_gait as aggregate_ravenna
+from fallspredict_gp_pipeline.aggregation.gait import aggregate_gait as aggregate_bologna
+from fallspredict_gp_pipeline.aggregation.minimum_data import apply_minimum_observations
+from fallspredict_pipeline.aggregation.gait import aggregate_gait as aggregate_ravenna
 
 
 class GaitQcTests(unittest.TestCase):

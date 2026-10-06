@@ -8,10 +8,10 @@ import warnings
 
 import pandas as pd
 
-from gp_pipeline.aggregation.redcap import build_parser, process_redcap, write_redcap_exports
-from gp_pipeline.aggregation.overall import build_parser as build_overall_parser
-from gp_pipeline.redcap.fratup import DEFAULT_FRATUP_DIR, attach_fratup
-from gp_pipeline.redcap.schema import NON_SENSOR_COLUMNS
+from fallspredict_gp_pipeline.aggregation.redcap import build_parser, process_redcap, write_redcap_exports
+from fallspredict_gp_pipeline.aggregation.overall import build_parser as build_overall_parser
+from fallspredict_gp_pipeline.redcap.fratup import DEFAULT_FRATUP_DIR, attach_fratup
+from fallspredict_gp_pipeline.redcap.schema import NON_SENSOR_COLUMNS
 from test_redcap import baseline
 
 
@@ -156,7 +156,7 @@ class FratupTests(unittest.TestCase):
             self.assertIsNone(parser.parse_args([*args, "--no-fratup"]).fratup_dir)
 
     def test_pipeline_exports_and_overall_merge_include_scores_and_extra_inputs(self):
-        from gp_pipeline.aggregation.overall import aggregate_all, write_all_exports
+        from fallspredict_gp_pipeline.aggregation.overall import aggregate_all, write_all_exports
         self.save(inputs=self.inputs.assign(patient_id=["12", "7"]))
         second = baseline("b", "12")
         second.update(patient_gender="1", patient_age="80", living_alonef_b="0")
@@ -174,8 +174,8 @@ class FratupTests(unittest.TestCase):
         combined = pd.read_csv(paths["clinical_sensors_T0"])
         self.assertEqual(combined.fratup.tolist(), [0.2, 0.4])
         self.assertEqual(combined.fratup_input_walkingaiduse.tolist(), [0., 1.])
-        with patch("gp_pipeline.aggregation.overall.aggregate_sleep", return_value=sensors), \
-             patch("gp_pipeline.aggregation.overall._build_non_sleep_domain_frames", return_value=[]), \
+        with patch("fallspredict_gp_pipeline.aggregation.overall.aggregate_sleep", return_value=sensors), \
+             patch("fallspredict_gp_pipeline.aggregation.overall._build_non_sleep_domain_frames", return_value=[]), \
              warnings.catch_warnings():
             warnings.simplefilter("ignore")
             merged = aggregate_all(redcap_csv=source, fratup_dir=self.root)

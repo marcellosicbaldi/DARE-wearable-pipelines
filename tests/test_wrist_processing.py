@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 
-PACKAGES = ('gp_pipeline', 'ravenna_pipeline')
+PACKAGES = ('fallspredict_gp_pipeline', 'fallspredict_pipeline')
 
 
 def sensor_frames(frequency=64, seconds=120):
@@ -72,9 +72,9 @@ class WristProcessingTests(unittest.TestCase):
                     self.assertEqual(actual[label].to_list(), [False, True, True])
 
     def test_combined_skipped_stages_remove_previous_results(self):
-        cases = [('gp_pipeline', 'gp', 'preprocess_empatica_recording',
+        cases = [('fallspredict_gp_pipeline', 'gp', 'preprocess_empatica_recording',
                   {'acc_parquet_path': 'synthetic.parquet', 'temp_parquet_path': 'synthetic_temp.parquet'}),
-                 ('ravenna_pipeline', 'ravenna', 'preprocess_geneactiv_recording',
+                 ('fallspredict_pipeline', 'ravenna', 'preprocess_geneactiv_recording',
                   {'geneactiv_bin_path': 'synthetic.bin'})]
         for pkg, cohort, prep, inputs in cases:
             module = importlib.import_module(pkg+'.wrist.sleep.sleep_pipeline_'+cohort)

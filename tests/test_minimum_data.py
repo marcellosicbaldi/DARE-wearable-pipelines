@@ -7,9 +7,9 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
-from gp_pipeline.aggregation.heart_rate import aggregate_heart_rate
-from gp_pipeline.aggregation.hrv import aggregate_hrv_windows
-from gp_pipeline.aggregation.minimum_data import apply_minimum_observations
+from fallspredict_gp_pipeline.aggregation.heart_rate import aggregate_heart_rate
+from fallspredict_gp_pipeline.aggregation.hrv import aggregate_hrv_windows
+from fallspredict_gp_pipeline.aggregation.minimum_data import apply_minimum_observations
 
 
 class MinimumDataTests(unittest.TestCase):
@@ -58,8 +58,8 @@ class MinimumDataTests(unittest.TestCase):
             "median_hr_night": [60., 60., np.nan, 62., 64., np.nan],
             "hr_dip_pct": [14., 14., np.nan, 12., np.nan, np.nan],
         })
-        with patch("gp_pipeline.aggregation.heart_rate._discover_heart_rate_inputs", return_value=[("7", Path("hr"), Path("sleep"))]), \
-             patch("gp_pipeline.aggregation.heart_rate.aggregate_participant_heart_rate", return_value=nightly):
+        with patch("fallspredict_gp_pipeline.aggregation.heart_rate._discover_heart_rate_inputs", return_value=[("7", Path("hr"), Path("sleep"))]), \
+             patch("fallspredict_gp_pipeline.aggregation.heart_rate.aggregate_participant_heart_rate", return_value=nightly):
             result, audit = aggregate_heart_rate("unused", recruitment_tracker_path=None)
         row = result.iloc[0]
         self.assertEqual(row.hr_n_valid_days, 2)

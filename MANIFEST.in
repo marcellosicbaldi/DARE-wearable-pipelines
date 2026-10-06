@@ -16,6 +16,6 @@ prune playground
 prune debug
 prune other_pipelines
 prune src/dare_wearables/outputs
-prune src/gp_pipeline/outputs
-prune src/ravenna_pipeline/outputs
+prune src/fallspredict_gp_pipeline/outputs
+prune src/fallspredict_pipeline/outputs
 global-exclude *.local.* *.private.* *.py[cod] .DS_Store .env .env.* *.csv *.tsv *.xlsx *.xls *.parquet *.parq *.bin *.BIN *.omx *.OMX *.pdf *.pem *.key *.log

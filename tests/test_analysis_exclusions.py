@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from gp_pipeline.aggregation.analysis_exclusions import (
+from fallspredict_gp_pipeline.aggregation.analysis_exclusions import (
     EXCLUDED_ANALYSIS_COLUMNS, AnalysisExclusions,
     apply_analysis_exclusions,
 )

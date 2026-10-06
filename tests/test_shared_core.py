@@ -27,7 +27,7 @@ class SharedCoreTests(unittest.TestCase):
                     names = [node.module or '']
                 for name in names:
                     with self.subTest(file=str(path.relative_to(SRC)), dependency=name):
-                        self.assertNotIn(name.split('.')[0], ('gp_pipeline', 'ravenna_pipeline'))
+                        self.assertNotIn(name.split('.')[0], ('fallspredict_gp_pipeline', 'fallspredict_pipeline'))
 
     def test_legacy_algorithm_modules_are_the_same_shared_module(self):
         mappings = {
@@ -51,18 +51,18 @@ class SharedCoreTests(unittest.TestCase):
         }
         for old, new in mappings.items():
             shared = importlib.import_module('dare_wearables.'+new)
-            for cohort in ('gp_pipeline', 'ravenna_pipeline'):
+            for cohort in ('fallspredict_gp_pipeline', 'fallspredict_pipeline'):
                 with self.subTest(cohort=cohort, module=old):
                     legacy = importlib.import_module(cohort+'.'+old)
-                    if cohort == 'ravenna_pipeline' and old == 'wrist.sleep.sleep_pipeline_gp':
+                    if cohort == 'fallspredict_pipeline' and old == 'wrist.sleep.sleep_pipeline_gp':
                         self.assertIs(legacy.run_wrist_from_preprocessed, shared.run_wrist_from_preprocessed)
                     else:
                         self.assertIs(legacy, shared)
-        old = importlib.import_module('ravenna_pipeline.wrist.circadian.geneactiv_preprocessing')
+        old = importlib.import_module('fallspredict_pipeline.wrist.circadian.geneactiv_preprocessing')
         self.assertIs(old, importlib.import_module('dare_wearables.wrist.circadian.geneactiv_preprocessing'))
 
     def test_ravenna_legacy_empatica_positional_arguments_keep_their_meaning(self):
-        legacy = importlib.import_module('ravenna_pipeline.wrist.sleep.sleep_pipeline_gp')
+        legacy = importlib.import_module('fallspredict_pipeline.wrist.sleep.sleep_pipeline_gp')
         shared = importlib.import_module('dare_wearables.wrist.sleep.pipeline')
         with patch.object(shared, 'run_sleep_pipeline_gp', return_value={'sleep': True}) as runner:
             result = legacy.run_sleep_pipeline_gp('acc.parquet', 'temp.parquet', '900001', 'T1', 'pyarrow', 'vanhees2013')
@@ -77,7 +77,7 @@ class SharedCoreTests(unittest.TestCase):
 import importlib.abc, importlib, sys
 class NoCohorts(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
-        if fullname.split('.')[0] in ('gp_pipeline', 'ravenna_pipeline'):
+        if fullname.split('.')[0] in ('fallspredict_gp_pipeline', 'fallspredict_pipeline'):
             raise ImportError('Unexpected cohort dependency: ' + fullname)
 sys.meta_path.insert(0, NoCohorts())
 for name in (
@@ -90,7 +90,7 @@ for name in (
     'dare_wearables.aggregation.cohorts',
 ):
     importlib.import_module(name)
-assert not any(name.split('.')[0] in ('gp_pipeline', 'ravenna_pipeline') for name in sys.modules)
+assert not any(name.split('.')[0] in ('fallspredict_gp_pipeline', 'fallspredict_pipeline') for name in sys.modules)
 '''
         with tempfile.TemporaryDirectory() as tmp:
             import os
@@ -101,7 +101,7 @@ assert not any(name.split('.')[0] in ('gp_pipeline', 'ravenna_pipeline') for nam
 
     def test_each_sensor_adapter_calls_the_same_wrist_stage_sequence(self):
         shared = importlib.import_module('dare_wearables.wrist.sleep.pipeline')
-        ravenna = importlib.import_module('ravenna_pipeline.wrist.sleep.sleep_pipeline_ravenna')
+        ravenna = importlib.import_module('fallspredict_pipeline.wrist.sleep.sleep_pipeline_ravenna')
         prepared = {'calibrated_df': object(), 'acc_df': object(), 'temp_df': object(),
                     'nonwear_df': object(), 'info': {}}
         for module, function, loader, inputs, method in (
@@ -127,11 +127,11 @@ assert not any(name.split('.')[0] in ('gp_pipeline', 'ravenna_pipeline') for nam
                 self.assertEqual(process.call_args.kwargs['activity_epoch_seconds'], 10)
 
     def test_cohort_defaults_and_legacy_gait_policy_are_preserved(self):
-        bo = importlib.import_module('gp_pipeline.aggregation.sleep')
-        ra = importlib.import_module('ravenna_pipeline.aggregation.sleep')
+        bo = importlib.import_module('fallspredict_gp_pipeline.aggregation.sleep')
+        ra = importlib.import_module('fallspredict_pipeline.aggregation.sleep')
         self.assertEqual(bo.DEFAULT_SLEEP_SUBDIR, Path('Empatica/sleep_circadian'))
         self.assertEqual(ra.DEFAULT_SLEEP_SUBDIR, Path('GENEActiv/sleep_circadian'))
-        for cohort, legacy, threshold in (('gp_pipeline', True, 1024*1024), ('ravenna_pipeline', False, 300*1024*1024)):
+        for cohort, legacy, threshold in (('fallspredict_gp_pipeline', True, 1024*1024), ('fallspredict_pipeline', False, 300*1024*1024)):
             adapter = importlib.import_module(cohort+'.aggregation.gait')
             shared = importlib.import_module('dare_wearables.aggregation.gait')
             with patch.object(shared, 'aggregate_gait', return_value=(pd.DataFrame(), pd.DataFrame())) as process:
@@ -151,8 +151,8 @@ assert not any(name.split('.')[0] in ('gp_pipeline', 'ravenna_pipeline') for nam
                 folder = root/'900001'/'T0'/sensor/'sleep_circadian'
                 folder.mkdir(parents=True)
                 pd.DataFrame({'guider_source': ['HDCZA'], 'spt_found': [True], 'TST': ['0 days 06:00:00']}).to_csv(folder/'sleep_output_all_guiders.csv', index=False)
-            bo = importlib.import_module('gp_pipeline.aggregation.sleep').aggregate_sleep(root)
-            ra = importlib.import_module('ravenna_pipeline.aggregation.sleep').aggregate_sleep(root)
+            bo = importlib.import_module('fallspredict_gp_pipeline.aggregation.sleep').aggregate_sleep(root)
+            ra = importlib.import_module('fallspredict_pipeline.aggregation.sleep').aggregate_sleep(root)
             pd.testing.assert_frame_equal(bo, aggregate_sleep(root, sleep_subdir=Path('Empatica/sleep_circadian')))
             pd.testing.assert_frame_equal(ra, aggregate_sleep(root, sleep_subdir=Path('GENEActiv/sleep_circadian')))
 

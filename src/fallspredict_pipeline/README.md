@@ -1,9 +1,9 @@
-# Ravenna Pipeline
+# DARE-FALLSPREDICT Pipeline
 
-This package is the Ravenna configuration and command adapter over the shared
-`dare_wearables` core. It is a sibling of the Bologna `gp_pipeline` adapter.
+This package is the DARE-FALLSPREDICT configuration and command adapter over the shared
+`dare_wearables` core. It is a sibling of the DARE-FALLSPREDICT GP `fallspredict_gp_pipeline` adapter.
 
-The Ravenna wrist entry point feeds the shared sleep, circadian and activity
+The DARE-FALLSPREDICT wrist entry point feeds the shared sleep, circadian and activity
 stages after sensor-specific preprocessing:
 
 - GENEActiv `.bin` loading via `dare_wearables.wrist.data_io.geneactiv`
@@ -14,13 +14,13 @@ stages after sensor-specific preprocessing:
 From the project root, after editing `configs/ravenna_sleep.local.toml`:
 
 ```bash
-python -m ravenna_pipeline.cli.ravenna_sleep --config configs/ravenna_sleep.local.toml --participant 900001 --combined
+python -m fallspredict_pipeline.cli.ravenna_sleep --config configs/ravenna_sleep.local.toml --participant 900001 --combined
 ```
 
 You can also run the notebook-style wrapper script directly:
 
 ```bash
-python src/ravenna_pipeline/main/wrist_pipeline.py --participant 900001
+python src/fallspredict_pipeline/main/wrist_pipeline.py --participant 900001
 ```
 
 If the project is installed with `pip install -e .`, the equivalent console command is:
@@ -57,21 +57,21 @@ Outputs are written to:
 output_root/<participant>/<visit>/GENEActiv/sleep_circadian/
 ```
 
-The shared lower-back workflow uses Ravenna configuration and can be run with:
+The shared lower-back workflow uses DARE-FALLSPREDICT configuration and can be run with:
 
 ```bash
-python -m ravenna_pipeline.cli.lower_back --config configs/ravenna_lower_back.local.toml --participant 900001
+python -m fallspredict_pipeline.cli.lower_back --config configs/ravenna_lower_back.local.toml --participant 900001
 ```
 
 Or with the notebook-style wrapper script:
 
 ```bash
-python src/ravenna_pipeline/main/lower_back_pipeline.py --participant 900001
+python src/fallspredict_pipeline/main/lower_back_pipeline.py --participant 900001
 ```
 
 ## Aggregate Outputs
 
-Ravenna aggregation reads from:
+DARE-FALLSPREDICT aggregation reads from:
 
 ```text
 ~/dare-data/ravenna/silver/<subject>/<visit>/
@@ -80,10 +80,10 @@ Ravenna aggregation reads from:
 Available aggregation commands:
 
 ```bash
-python -m ravenna_pipeline.aggregation.sleep
-python -m ravenna_pipeline.aggregation.gait
-python -m ravenna_pipeline.aggregation.activity_intensity
-python -m ravenna_pipeline.aggregation.overall
+python -m fallspredict_pipeline.aggregation.sleep
+python -m fallspredict_pipeline.aggregation.gait
+python -m fallspredict_pipeline.aggregation.activity_intensity
+python -m fallspredict_pipeline.aggregation.overall
 ```
 
 Outputs are written by default to:

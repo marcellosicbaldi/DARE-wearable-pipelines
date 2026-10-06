@@ -17,8 +17,8 @@ with patch.object(sys, 'path', [str(ROOT / 'scripts'), *sys.path]):
 
 class PackagingTests(unittest.TestCase):
     def test_configuration_paths_follow_invocation_directory(self):
-        from gp_pipeline.config import EmpaticaSleepConfig
-        from ravenna_pipeline.config import RavennaSleepConfig
+        from fallspredict_gp_pipeline.config import EmpaticaSleepConfig
+        from fallspredict_pipeline.config import RavennaSleepConfig
         from dare_wearables.common.paths import resolve_path
         with tempfile.TemporaryDirectory() as tmp, chdir(tmp):
             root = Path(tmp).resolve()
@@ -34,6 +34,8 @@ class PackagingTests(unittest.TestCase):
 
     def test_archive_audit_rejects_private_data_and_unsafe_paths(self):
         for name, message in [('outputs/result.csv', 'private/generated directory'),
+                              ('gp_pipeline/__init__.py', 'obsolete package path'),
+                              ('ravenna_pipeline/__init__.py', 'obsolete package path'),
                               ('configs/run.local.toml', 'private configuration'),
                               ('synthetic.dist-info/study.csv', 'file type is not in the publication allowlist'),
                               ('../escaped.py', 'unsafe archive path')]:

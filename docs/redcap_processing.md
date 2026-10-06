@@ -1,4 +1,4 @@
-# Bologna and Ravenna REDCap processing
+# DARE-FALLSPREDICT GP and DARE-FALLSPREDICT REDCap processing
 
 The extractor preserves a study-specific 185-column T0 schema. Clinical
 scoring conventions are documented below; participant values are computed
@@ -32,7 +32,7 @@ gp-aggregate-redcap \
   --output-dir outputs/redcap
 ```
 
-Alternatively use `PYTHONPATH=src python -m gp_pipeline.aggregation.redcap`
+Alternatively use `PYTHONPATH=src python -m fallspredict_gp_pipeline.aggregation.redcap`
 with the same arguments from the project root. Only pandas and NumPy are
 required. The reference argument is optional and performs comparison only.
 The default source is now `REDCap/Bologna/fallspredict_data.csv`, relative to the generic data root. With `--cohort RA`, the default changes to
@@ -60,7 +60,7 @@ Joins normalize IDs, validate unique `subject, visit` keys, reject overlapping
 non-key columns, and retain participants without sensors.
 
 ```python
-from gp_pipeline.aggregation.redcap import (
+from fallspredict_gp_pipeline.aggregation.redcap import (
     process_redcap, aggregate_redcap, merge_redcap_with_sensors,
 )
 
@@ -76,7 +76,7 @@ fratup_audit = result.fratup_import   # Linkage method and reused/added columns
 clinical_for_merge = aggregate_redcap(redcap_csv)
 combined = merge_redcap_with_sensors(clinical_for_merge, sensor_dataframe)
 
-# Ravenna alone (use the combined assembly command for both sites):
+# DARE-FALLSPREDICT alone (use the combined assembly command for both sites):
 ravenna = process_redcap(cohort="RA")
 ```
 
@@ -91,7 +91,7 @@ the score missing. The Python equivalents are `fratup_dir=folder` and
 runs do not access this folder. No R code is copied, distributed, sourced, or
 executed by the pipeline.
 
-For Bologna T0, the required pair is:
+For DARE-FALLSPREDICT GP T0, the required pair is:
 
 - `fratup_input_BO_T0.csv`: participant identifiers and the risk-factor inputs
   supplied to FRAT-up.
@@ -113,7 +113,7 @@ Record IDs are resolved through the REDCap baseline identity map and are never
 treated as patient IDs. When multiple identifiers are present they must agree.
 Input and result files can be reordered independently; their participant sets
 must match. Their identifiers are resolved separately through REDCap. The
-updated Bologna and Ravenna T0 files contain both `record_id` and `patient_id`; the loader
+updated DARE-FALLSPREDICT GP and DARE-FALLSPREDICT T0 files contain both `record_id` and `patient_id`; the loader
 checks that these agree. Files without identifiers are rejected. There is no
 row-order fallback, and demographics are not used to establish identity.
 Identifiers are preserved in the dedicated input export and excluded from the
@@ -261,7 +261,7 @@ regardless of form completion. Blank raw fall counts remain blank.
   **It does not use measured MMSE.** The historical column name is retained;
   this does not validate an adjustment to an individual's measured score.
 - Cell 33 supplies all 60 disease categories and cell 37 all 94 ATC indicators,
-  bundled in `src/gp_pipeline/redcap/codebook.py`. All 15 baseline disease
+  bundled in `src/fallspredict_gp_pipeline/redcap/codebook.py`. All 15 baseline disease
   slots and 20 medication slots are inspected, including slots omitted by the
   notebook. Totals sum category flags, not raw slots.
 - Default category coding reproduces the notebook: any matched code gives 1,

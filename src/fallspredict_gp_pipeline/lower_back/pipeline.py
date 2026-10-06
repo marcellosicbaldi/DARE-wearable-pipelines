@@ -1,4 +1,4 @@
-"""ravenna_pipeline lower-back defaults over the shared processing runner."""
+"""fallspredict_gp_pipeline lower-back defaults over the shared processing runner."""
 from pathlib import Path
 from ..config import LowerBackConfig
 from dare_wearables.lower_back import pipeline as _shared
@@ -7,11 +7,11 @@ from dare_wearables.lower_back.pipeline import (
     _load_gait_helpers, _list_subjects, acc_cols, gyro_cols,
 )
 
-MIN_SIZE = 300 * 1024 * 1024
+MIN_SIZE = 1 * 1024 * 1024
 
 
-def load_redcap_metadata(redcap_csv: str | Path, *, get_sensor_height_fn):
-    return _shared.load_redcap_metadata(redcap_csv, get_sensor_height_fn=get_sensor_height_fn)
+def load_redcap_metadata(redcap_csv: str | Path):
+    return _shared.load_redcap_metadata(redcap_csv)
 
 
 def run_from_config(config: LowerBackConfig) -> None:

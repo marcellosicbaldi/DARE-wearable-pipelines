@@ -68,7 +68,7 @@ def run_sleep_pipeline_ravenna(
     save_folder: Optional[str | Path] = None,
 ) -> Dict[str, object]:
     """
-    Ravenna / GENEActiv sleep pipeline.
+    DARE-FALLSPREDICT / GENEActiv sleep pipeline.
 
     This is the GP sleep workflow with the wrist preprocessing swapped from
     Empatica parquet + DETACH to GENEActiv .bin + Van Hees/GGIR non-wear.
@@ -160,7 +160,7 @@ def run_sleep_and_circadian_pipeline_ravenna(
     save_folder: Optional[str | Path] = None,
 ) -> Dict[str, object]:
     """
-    Ravenna combined pipeline: sleep, circadian, and activity-intensity from
+    DARE-FALLSPREDICT combined pipeline: sleep, circadian, and activity-intensity from
     one shared GENEActiv preprocessing step.
     """
     if participant is None:

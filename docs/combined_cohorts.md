@@ -1,24 +1,24 @@
-# Combined Bologna and Ravenna dataset
+# Combined DARE-FALLSPREDICT GP and DARE-FALLSPREDICT dataset
 
 `gp-aggregate-cohorts` is the final local assembly step. It reads the completed
 sensor exports from each site, processes each site's REDCap with its own
 FRAT-up files, applies the specified visual exclusions, minimum-data masks and column removals, and
 combines the rows using the union of the retained columns. It does
-not access the Ravenna server or recompute sensor features.
+not access the DARE-FALLSPREDICT server or recompute sensor features.
 
 ## Run
 
 Activate the pipeline Python environment, then run from the project root:
 
-**After the three-day/night rule update, first refresh Bologna's sensor
+**After the three-day/night rule update, first refresh DARE-FALLSPREDICT GP's sensor
 aggregation.** Older exports do not contain the separate HR counts or
 metric-specific HRV counts needed to enforce the rule. This reads existing
-Silver outputs; it does not rerun raw sensor processing. Ravenna's existing
+Silver outputs; it does not rerun raw sensor processing. DARE-FALLSPREDICT's existing
 gait/sleep/activity exports already include the required counts.
 
 ```bash
 cd "/path/to/DARE-wearable-pipelines"
-PYTHONPATH=src python -m gp_pipeline.aggregation.overall \
+PYTHONPATH=src python -m fallspredict_gp_pipeline.aggregation.overall \
   --silver-root "~/dare-data/silver" \
   --visit T0 --sleep-method both \
   --output-dir "~/dare-data/silver/aggregation"
@@ -29,7 +29,7 @@ Then rebuild the final dataset:
 ```bash
 cd "/path/to/DARE-wearable-pipelines"
 
-PYTHONPATH=src python -m gp_pipeline.aggregation.cohorts \
+PYTHONPATH=src python -m fallspredict_gp_pipeline.aggregation.cohorts \
   --sleep-method mean \
   --exclusions-config configs/analysis_exclusions.local.toml \
   --output-dir "~/dare-data/gold/aggregation"
@@ -52,7 +52,7 @@ or with the old `_sleep_mean` suffix are not rewritten or deleted by the new run
 To omit participant IDs from the saved CSVs, run:
 
 ```bash
-PYTHONPATH=src python -m gp_pipeline.aggregation.cohorts --no-manual-exclusions --save-subject-id FALSE
+PYTHONPATH=src python -m fallspredict_gp_pipeline.aggregation.cohorts --no-manual-exclusions --save-subject-id FALSE
 ```
 
 `--save-subject-id TRUE` is the default; values are case-insensitive. IDs are
@@ -70,7 +70,7 @@ column omission, not full anonymisation: dates, free text, source paths and
 source-row references remain. Audit rows lose their participant join keys.
 For Python calls, use `write_combined_exports(save_subject_id=False, ...)`.
 
-Legacy Bologna files with no nonwear column are interpreted as wear-filtered;
+Legacy DARE-FALLSPREDICT GP files with no nonwear column are interpreted as wear-filtered;
 newer files report recorded hours and nonwear separately.
 
 All defaults are relative to
@@ -78,10 +78,10 @@ All defaults are relative to
 
 | Data | Default location | Override |
 | --- | --- | --- |
-| Bologna sensors | `silver/aggregation` | `--bologna-sensor-dir` |
-| Ravenna sensors | `silver/aggregation/Ravenna` | `--ravenna-sensor-dir` |
-| Bologna REDCap | `REDCap/Bologna/fallspredict_data.csv` | `--bologna-redcap-csv` |
-| Ravenna REDCap | `REDCap/Ravenna/fallspredict_data.csv` | `--ravenna-redcap-csv` |
+| DARE-FALLSPREDICT GP sensors | `silver/aggregation` | `--bologna-sensor-dir` |
+| DARE-FALLSPREDICT sensors | `silver/aggregation/Ravenna` | `--ravenna-sensor-dir` |
+| DARE-FALLSPREDICT GP REDCap | `REDCap/Bologna/fallspredict_data.csv` | `--bologna-redcap-csv` |
+| DARE-FALLSPREDICT REDCap | `REDCap/Ravenna/fallspredict_data.csv` | `--ravenna-redcap-csv` |
 | Both cohorts' FRAT-up files | `gold/fratup` | `--fratup-dir` |
 | Combined output | `gold/aggregation` | `--output-dir` |
 
@@ -103,7 +103,7 @@ Without an overall export, these three domain files are required:
 - `gait_T0_mean.csv` or `.xlsx`.
 - `activity_intensity_T0.csv` or `.xlsx`.
 
-This directly supports the current Ravenna folder's four Excel files: the
+This directly supports the current DARE-FALLSPREDICT folder's four Excel files: the
 selected sleep variant plus gait and activity. A workbook must contain one
 sheet, as the supplied workbooks do. Having both `.csv` and `.xlsx` for a
 selected filename is an ambiguity error. Other files are not guessed or
@@ -118,7 +118,7 @@ Every final row is internally keyed by **`group`, `subject`, `visit`**;
 
 - `group` is explicitly `BO` or `RA`, assigned from the selected cohort.
 - `subject` is resolved from REDCap `patient_id`; event rows are linked within
-  their `record_id`. Record IDs, including Ravenna's `FP...` identifiers, are
+  their `record_id`. Record IDs, including DARE-FALLSPREDICT's `FP...` identifiers, are
   not used as patient IDs. Numeric subject IDs normalize leading zeros and
   trailing `.0`, with a minimum display width of four digits, as in the sensor
   merge. Original identifiers remain in the event and FRAT-up input exports
@@ -137,8 +137,8 @@ mapped T0 clinical values stay missing. Their raw events are exported separately
 
 Unavailable fields are missing values, never filled with zero. CSV exports use
 the literal `NaN` marker, which `pandas.read_csv` reads as missing by default.
-For example, the current Ravenna exports have no HR/HRV columns, so those
-Bologna columns are retained in the combined schema and are NaN on Ravenna
+For example, the current DARE-FALLSPREDICT exports have no HR/HRV columns, so those
+DARE-FALLSPREDICT GP columns are retained in the combined schema and are NaN on DARE-FALLSPREDICT
 rows. The presence flags are the exception: a missing source is explicitly `0`.
 The column coverage file distinguishes a column absent from one site's schema
 from a present column whose observations happen to be missing.
@@ -155,15 +155,15 @@ either case. The configuration format is shown in
 Local configuration files are ignored by Git and excluded from distributions.
 The private config path is included in the local source-file audit.
 
-These rules live in `src/gp_pipeline/aggregation/analysis_exclusions.py` and are
+These rules live in `src/fallspredict_gp_pipeline/aggregation/analysis_exclusions.py` and are
 applied by the final cohort assembly command, before schema alignment and
-coverage counts. They affect the combined, Bologna and Ravenna analysis files
+coverage counts. They affect the combined, DARE-FALLSPREDICT GP and DARE-FALLSPREDICT analysis files
 for both mean and median sleep runs. They do not modify source sensor exports,
 REDCap records, FRAT-up files, or the earlier automatic per-window HRV filtering.
 
 ### Minimum three valid days or nights
 
-`src/gp_pipeline/aggregation/minimum_data.py` applies the requested minimum of
+`src/fallspredict_gp_pipeline/aggregation/minimum_data.py` applies the requested minimum of
 **3** observations independently to each domain in both cohorts. A count of
 0, 1 or 2 masks the corresponding measurements to NaN; exactly 3 passes.
 It replaces the previous gait-only `== 0` mask.
@@ -219,16 +219,16 @@ exports from silently bypassing the new rule.
 
 ### RMSSD and SDNN
 
-For Bologna T0 participants listed in `manual_exclusions.rmssd_sdnn_ids`,
+For DARE-FALLSPREDICT GP T0 participants listed in `manual_exclusions.rmssd_sdnn_ids`,
 both `hrv_rmssd` and `hrv_sdnn` are set to NaN. Other HRV and heart-rate
 metrics remain available. Numeric IDs are normalized before matching.
 
-- `rmssd_sdnn_exclusion`: `1` for the listed Bologna T0 participants, otherwise `0`.
+- `rmssd_sdnn_exclusion`: `1` for the listed DARE-FALLSPREDICT GP T0 participants, otherwise `0`.
 - `rmssd_sdnn_exclusion_method`: `visual inspection` when excluded, otherwise NaN.
 
 ### Sleep, circadian and activity intensity
 
-For Ravenna T0 participants listed in `manual_exclusions.sleep_circadian_ids`,
+For DARE-FALLSPREDICT T0 participants listed in `manual_exclusions.sleep_circadian_ids`,
 all sensor columns starting with these prefixes are set to NaN:
 
 | Prefix | Data excluded |
@@ -239,7 +239,7 @@ all sensor columns starting with these prefixes are set to NaN:
 | `circadian_` | All retained circadian variables, including clock strings and counts. |
 | `activity_` | All activity-intensity variables and valid-day counts. |
 
-- `sleep_circadian_exclusion`: `1` for the listed Ravenna T0 participants, otherwise `0`.
+- `sleep_circadian_exclusion`: `1` for the listed DARE-FALLSPREDICT T0 participants, otherwise `0`.
 - `sleep_circadian_exclusion_method`: `visual inspection` when excluded, otherwise NaN.
 
 The sleep exclusion includes activity intensity despite the shorter flag name.
@@ -298,12 +298,12 @@ Both cohorts use the existing mapped T0 variables, questionnaire calculations,
 disease/ATC definitions, fall verification, and monthly follow-up rules described
 in [REDCap processing](redcap_processing.md). This applies the supplied notebook
 specification to the shared source field names; it is not a separate validation
-of Ravenna's clinical codebook. Historical mapping limitations remain visible
+of DARE-FALLSPREDICT's clinical codebook. Historical mapping limitations remain visible
 in the mapping and codebook-issue exports. If a site's code definitions differ,
 use `--bologna-codebook` or `--ravenna-codebook` for that site's replacement JSON.
 
-FRAT-up selects `fratup_input_BO_T0.csv` and `result_BO_T0.csv` for Bologna,
-and `fratup_input_RA_T0.csv` and `result_RA_T0.csv` for Ravenna. The alternative
+FRAT-up selects `fratup_input_BO_T0.csv` and `result_BO_T0.csv` for DARE-FALLSPREDICT GP,
+and `fratup_input_RA_T0.csv` and `result_RA_T0.csv` for DARE-FALLSPREDICT. The alternative
 `results_` spelling is accepted. Both input and score files require identifiers;
 IDs are checked only against the selected site's REDCap. Private R code remains
 external. Distinct FRAT-up input fields are included in the same column union.
@@ -312,7 +312,7 @@ The combined and cohort-specific analysis CSVs contain mapped clinical variables
 FRAT-up scores/inputs, derived monthly follow-up measures, sensor features, and
 source-presence flags. Raw fields expanded into columns named
 `redcap__<event>__<field>` are excluded as requested. This removes the block of
-1,742 columns previously produced from Ravenna's 134 extra fifth-fall fields.
+1,742 columns previously produced from DARE-FALLSPREDICT's 134 extra fifth-fall fields.
 
 All original fields remain in the separate long-format `fallspredict_redcap_events.csv`,
 except the ID columns when `--save-subject-id FALSE` is used.
@@ -344,9 +344,9 @@ other audit exports concern the same clinical data regardless of sleep variant.
 
 ## Validation and execution status
 
-Read-only inspection of the supplied files found 200 Bologna and 538 Ravenna
-baseline participants. Bologna's previous sensor export contains 197 matched
-participants. Ravenna's local domain exports cover 529 distinct participants,
+Read-only inspection of the supplied files found 200 DARE-FALLSPREDICT GP and 538 DARE-FALLSPREDICT
+baseline participants. DARE-FALLSPREDICT GP's previous sensor export contains 197 matched
+participants. DARE-FALLSPREDICT's local domain exports cover 529 distinct participants,
 all matching its REDCap patient IDs. With these inputs the expected combined
 population is 738 participants, including 12 without sensor rows.
 
