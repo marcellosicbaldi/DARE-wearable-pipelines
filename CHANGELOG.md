@@ -24,6 +24,5 @@ processing workflows.
   synthetic regressions and GitHub distribution checks.
 - MIT project license with retained third-party notices and method attribution.
 
-See `docs/publication.md` for changes that require reprocessing existing results.
 Synthetic regression and model-loading checks do not establish clinical accuracy
 or equivalence on private study recordings.

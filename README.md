@@ -16,15 +16,25 @@ distribution. The project is MIT-licensed, with incorporated-source notices
 preserved alongside the code.
 The existing `fallspredict_gp_pipeline` / `fallspredict_pipeline` console commands are retained.
 
-## Upgrade from 0.1.0
+## Workflow overview
 
-Python imports now use `fallspredict_gp_pipeline` (DARE-FALLSPREDICT GP) and
-`fallspredict_pipeline` (DARE-FALLSPREDICT). Replace the former `gp_pipeline`
-and `ravenna_pipeline` prefixes in Python code and `python -m` commands.
-Existing console commands (`gp-*`, `ravenna-*`), configuration filenames,
-`BO`/`RA` cohort codes and legacy data-folder names remain compatible. Folder
-names such as `REDCap/Bologna` and `REDCap/Ravenna` describe existing input
-layouts, not the current study display names.
+Device-specific preprocessing feeds shared feature extraction and aggregation
+for both studies. Sensor summaries are joined with clinical data for combined
+cohort exports.
+
+```mermaid
+flowchart TD
+    EMP["Empatica wrist data"] --> WRIST["Sleep, circadian rhythm and activity"]
+    GEN["GENEActiv wrist data"] --> WRIST
+    EMP --> CARDIO["Heart rate and nocturnal HRV"]
+    IMU["Lower-back IMU data"] --> GAIT["Gait and time in bed"]
+    WRIST --> AGG["Participant and visit aggregation"]
+    CARDIO --> AGG
+    GAIT --> AGG
+    CLINICAL["REDCap and FRAT-up data"] --> CLIN["Clinical processing"]
+    AGG --> EXPORT["Combined cohort CSV exports"]
+    CLIN --> EXPORT
+```
 
 ## Contents
 
@@ -38,8 +48,7 @@ tests/         Synthetic regression tests
 ```
 
 Study data, saved notebook results, exploratory/legacy notebooks, local
-diagnostic reports, editor state, third-party reference PDFs and private
-exclusion lists are not included. See [publication preparation](docs/publication.md).
+diagnostic reports, editor state and third-party reference PDFs are not included.
 
 ## Shared architecture
 
@@ -66,15 +75,9 @@ For new Python integrations, use the neutral APIs in
 `run_wrist_from_empatica_silver`, `run_wrist_from_preprocessed`) and
 `dare_wearables.lower_back.pipeline` (`run_from_config`). Shared aggregation
 functions require explicit roots and sensor subdirectories. See the
-[architecture diagram](docs/pipeline_diagram.md) and
-[extraction details](docs/publication.md#shared-core-extraction).
+[architecture diagram](docs/pipeline_diagram.md).
 
 ## Setup and private configuration
-
-The supported release environment is **Python 3.11 on Apple Silicon macOS or
-Linux x86_64**. Other Python versions and platforms have not been validated.
-The lockfile pins all resolved dependencies and their artifact hashes; direct
-scientific dependencies are also pinned in package metadata.
 
 Download a [GitHub release](https://github.com/marcellosicbaldi/DARE-wearable-pipelines/releases), or clone the repository and check out the desired release tag. Enter the repository directory,
 and install [uv](https://docs.astral.sh/uv/getting-started/installation/) version
@@ -111,12 +114,6 @@ then edit that local file with your private paths and participant selection.
 Local configuration files are ignored by Git and excluded from distributions.
 Examples use the fictional identifier `900001`; no example data is supplied.
 
-DARE-FALLSPREDICT GP data paths currently require absolute paths, with a leading `~`
-expanded to your home directory. DARE-FALLSPREDICT config-relative paths are resolved
-from the configuration file's folder. Relative `--config` paths resolve from
-your current working directory, including after wheel installation. Generic aggregation defaults use
-`~/dare-data`; override them with the command's path arguments as needed.
-
 ## Run
 
 After preparing the matching local configuration:
@@ -151,20 +148,12 @@ and `nocturnal_bursts` subdirectories as selected by the configuration.
 All generated outputs and clinical/sensor inputs remain private. Omitting an
 ID column from an export is not an anonymization procedure.
 
-## Aggregation and private exclusions
+## Aggregation
 
 ```bash
 gp-aggregate-all --silver-root "$HOME/dare-data/silver" --visit T0
 gp-aggregate-redcap --redcap-csv "$HOME/dare-data/REDCap/Bologna/fallspredict_data.csv" --output-dir outputs/redcap
-gp-aggregate-cohorts --exclusions-config configs/analysis_exclusions.local.toml --sleep-method mean
 ```
-
-The combined-cohort command requires either a private `--exclusions-config`
-or an explicit `--no-manual-exclusions`. This prevents a missing private rule
-file from silently changing a study's exclusion decisions. The distributable
-`analysis_exclusions.example.toml` has empty lists; enter your reviewed study
-decisions in the ignored local copy. Automatic minimum-data masks and column
-selection apply in both modes.
 
 See [combined cohort assembly](docs/combined_cohorts.md),
 [REDCap processing](docs/redcap_processing.md), and
@@ -179,12 +168,10 @@ uv run --no-sync python scripts/check_install.py
 ```
 
 The publication check inspects Git-visible working files and staged content
-for disallowed files, local paths, common credential patterns, notebook
-execution state and nonempty example exclusion lists. It reports locations,
-not sensitive values. It does not inspect Git history or certify arbitrary
-text as anonymous; keep future additions limited to reviewed code, prose and
-synthetic examples.
-
+for disallowed files, local paths, common credential patterns and notebook
+execution state. It reports locations, not sensitive values. It does not inspect
+Git history or certify arbitrary text as anonymous; keep future additions limited
+to reviewed code, prose and synthetic examples.
 
 ## Licensing and attribution
 
