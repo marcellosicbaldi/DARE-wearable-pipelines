@@ -24,10 +24,10 @@ cohort exports.
 
 ```mermaid
 flowchart TD
-    EMP["Empatica EmbracePlus wrist data"] --> WRIST["Sleep, circadian rhythm and activity"]
+    EMP["Empatica EmbracePlus wrist data"] --> WRIST["Sleep<sup>1,2</sup>, circadian rhythm and activity"]
     GEN["GENEActiv wrist data"] --> WRIST
-    EMP --> CARDIO["Heart rate and nocturnal HRV"]
-    IMU["Lower-back IMU data"] --> GAIT["Gait and time in bed"]
+    EMP --> CARDIO["Heart rate<sup>3,4</sup> and nocturnal HRV<sup>5</sup>"]
+    IMU["Lower-back IMU data"] --> GAIT["Gait<sup>6</sup> and time in bed"]
     WRIST --> AGG["Participant and visit aggregation"]
     CARDIO --> AGG
     GAIT --> AGG
@@ -190,6 +190,9 @@ to reviewed code, prose and synthetic examples.
 5. **PPG beat detection (MSPTDfast):** Charlton, P. H., Mant, J., and Kyriacou, P. A. (2024).
    [MSPTDfast: An Efficient Photoplethysmography Beat Detection Algorithm](https://doi.org/10.22489/CinC.2024.045).
    *Computing in Cardiology*, 51, 1–4.
+6. **Gait (MobGap):** Kirk, C., et al. (2026).
+   [Mobgap: A State-of-the-Art Python Framework for Reproducible Estimation and Algorithm Validation of Digital Mobility Outcomes from a Single Wearable Device](https://doi.org/10.3390/s26134294).
+   *Sensors*, 26(13), 4294.
 
 ## Licensing and attribution
 
