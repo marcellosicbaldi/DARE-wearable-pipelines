@@ -5,6 +5,7 @@ recursive-include .github *.yml
 recursive-include src *.py *.md
 recursive-include configs *.example.toml
 recursive-include docs *.md
+include docs/images/study-setup.png
 recursive-include notebooks *.ipynb
 recursive-include scripts *.py
 recursive-include tests *.py

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -16,6 +17,13 @@ except ModuleNotFoundError:
 
 
 MAX_BYTES = 1_000_000
+# Exact reviewed documentation assets; other binary files remain disallowed.
+REVIEWED_BINARY_ASSETS = {
+    "docs/images/study-setup.png": (
+        1_529_412,
+        "543bee2119665a688f901ba7b1cf081aa1a36bc88d01a7e8a349d817a2f54b13",
+    ),
+}
 ALLOWED_SUFFIXES = {".py", ".md", ".toml", ".txt", ".ipynb", ".yml", ".yaml"}
 ALLOWED_NAMES = {".gitignore", ".gitattributes", "MANIFEST.in", "LICENSE", "NOTICE", ".python-version", "uv.lock"}
 PRIVATE_PARTS = {"data", "bronze", "silver", "gold", "outputs", "private", "logs",
@@ -31,19 +39,29 @@ PATTERNS = {
 }
 
 
+def size_limit(name: str) -> int:
+    reviewed = REVIEWED_BINARY_ASSETS.get(name)
+    return reviewed[0] if reviewed is not None else MAX_BYTES
+
+
 def check_content(name: str, payload: bytes) -> list[str]:
     path = PurePosixPath(name)
+    reviewed = REVIEWED_BINARY_ASSETS.get(name)
     issues = []
     if any(part.lower() in PRIVATE_PARTS for part in path.parts):
         issues.append("private/generated directory")
-    if path.name not in ALLOWED_NAMES and path.suffix.lower() not in ALLOWED_SUFFIXES:
+    if reviewed is None and path.name not in ALLOWED_NAMES and path.suffix.lower() not in ALLOWED_SUFFIXES:
         issues.append("file type is not in the publication allowlist")
     if ".local." in path.name or ".private." in path.name or path.name.startswith(".env"):
         issues.append("private configuration")
     if "configs" in path.parts and not (path.name.endswith(".example.toml") or path.suffix == ".md"):
         issues.append("only example configurations may be published")
-    if len(payload) > MAX_BYTES:
+    if len(payload) > size_limit(name):
         return issues + ["file exceeds publication size limit"]
+    if reviewed is not None:
+        if hashlib.sha256(payload).hexdigest() != reviewed[1]:
+            issues.append("binary asset differs from the reviewed publication content")
+        return issues
     try:
         text = payload.decode("utf-8")
     except UnicodeDecodeError:
@@ -108,20 +126,20 @@ def audit(root: Path) -> tuple[int, list[str]]:
             if mode not in {"100644", "100755"} or stage != "0":
                 findings.append(f"index:{name}: unsupported mode or unresolved merge")
                 continue
-            if int(git(root, "cat-file", "-s", blob)) > MAX_BYTES:
+            if int(git(root, "cat-file", "-s", blob)) > size_limit(name):
                 findings.append(f"index:{name}: file exceeds publication size limit")
                 continue
             findings.extend(f"index:{name}: {reason}" for reason in check_content(name, git(root, "cat-file", "blob", blob)))
     else:
         # Before git init, inspect the entire tree. Private additions must not be
         # copied into this publication candidate in the first place.
-        names = {str(p.relative_to(root)) for p in root.rglob("*") if p.is_file() or p.is_symlink()}
+        names = {p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file() or p.is_symlink()}
     for name in sorted(names):
         file = root / name
         if file.is_symlink():
             findings.append(f"working:{name}: symlink is not allowed")
         elif file.is_file():
-            if file.stat().st_size > MAX_BYTES:
+            if file.stat().st_size > size_limit(name):
                 findings.append(f"working:{name}: file exceeds publication size limit")
             else:
                 findings.extend(f"working:{name}: {reason}" for reason in check_content(name, file.read_bytes()))

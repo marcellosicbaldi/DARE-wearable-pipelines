@@ -14,6 +14,38 @@ spec.loader.exec_module(guard)
 
 
 class PublicationTests(unittest.TestCase):
+    def test_reviewed_figure_is_allowed_only_at_its_approved_path_and_content(self):
+        name = "docs/images/study-setup.png"
+        payload = (SCRIPT.parents[1] / name).read_bytes()
+        self.assertFalse(guard.check_content(name, payload))
+        self.assertTrue(guard.check_content(name, payload[:-1] + bytes([payload[-1] ^ 1])))
+        self.assertTrue(guard.check_content(name, payload + b"extra"))
+        self.assertTrue(guard.check_content("docs/images/another-figure.png", payload))
+        self.assertTrue(guard.check_content("outputs/study-setup.png", payload))
+        self.assertTrue(guard.check_content("README.md", b"x" * (guard.MAX_BYTES + 1)))
+
+    def test_reviewed_figure_passes_working_and_index_size_checks(self):
+        name = "docs/images/study-setup.png"
+        payload = (SCRIPT.parents[1] / name).read_bytes()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            figure = root / name
+            figure.parent.mkdir(parents=True)
+            figure.write_bytes(payload)
+            self.assertFalse(guard.audit(root)[1])
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            subprocess.run(["git", "-C", str(root), "add", name], check=True)
+            self.assertFalse(guard.audit(root)[1])
+            figure.write_bytes(payload[:-1] + bytes([payload[-1] ^ 1]))
+            issues = guard.audit(root)[1]
+            self.assertTrue(any(item.startswith(f"working:{name}:") for item in issues))
+            self.assertFalse(any(item.startswith(f"index:{name}:") for item in issues))
+            subprocess.run(["git", "-C", str(root), "add", name], check=True)
+            figure.write_bytes(payload)
+            issues = guard.audit(root)[1]
+            self.assertTrue(any(item.startswith(f"index:{name}:") for item in issues))
+            self.assertFalse(any(item.startswith(f"working:{name}:") for item in issues))
+
     def test_rejects_data_and_private_configs_even_with_harmless_contents(self):
         for name in ("measurements.csv", "source.OMX", "src/fallspredict_gp_pipeline/outputs/report.md",
                      "configs/settings.local.toml", "configs/settings.toml", "reference.pdf"):
