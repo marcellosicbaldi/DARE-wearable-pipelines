@@ -1,6 +1,6 @@
 # Heart Rate Variability
 
-This module contains the Empatica PPG HRV workflow migrated from `legacy/hrv/HRV.ipynb`.
+This module contains the Empatica EmbracePlus PPG HRV workflow migrated from `legacy/hrv/HRV.ipynb`.
 
 The algorithm files were adapted from the original notebook:
 

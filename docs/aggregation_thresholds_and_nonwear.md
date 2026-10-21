@@ -164,7 +164,7 @@ Neither cardio path uses the wrist nonwear table directly, and neither imputes n
 
 ## Nonwear Detection
 
-### Wrist Empatica Nonwear
+### Wrist Empatica EmbracePlus Nonwear
 
 The default GP wrist nonwear method is `empatica_detach`.
 

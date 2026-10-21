@@ -1,6 +1,6 @@
 # Heart Rate
 
-This module contains the Empatica PPG heart-rate workflow migrated from
+This module contains the Empatica EmbracePlus PPG heart-rate workflow migrated from
 `legacy/hr/beliefppg.ipynb`.
 
 The workflow:

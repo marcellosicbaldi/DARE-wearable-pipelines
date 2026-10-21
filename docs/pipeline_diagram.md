@@ -9,7 +9,7 @@ flowchart TD
     BO["fallspredict_gp_pipeline: DARE-FALLSPREDICT GP configuration and commands"] --> CORE
     RA["fallspredict_pipeline: DARE-FALLSPREDICT configuration and commands"] --> CORE
     subgraph CORE["dare_wearables: shared processing core"]
-        EMP["Empatica preprocessing"] --> PRE["Prepared wrist data"]
+        EMP["Empatica EmbracePlus preprocessing"] --> PRE["Prepared wrist data"]
         GEN["GENEActiv preprocessing"] --> PRE
         PRE --> WRIST["Common sleep, circadian and activity stages"]
         IMU["McRoberts reader and continuous wear segments"] --> LB["Common gait and posture stages"]
@@ -74,12 +74,12 @@ flowchart TD
     tib_summary.csv"]:::output
   end
 
-  subgraph WS["2. Empatica wrist sleep, circadian, and activity-intensity pipeline"]
+  subgraph WS["2. Empatica EmbracePlus wrist sleep, circadian, and activity-intensity pipeline"]
     WS_LAUNCH["Pipeline launch and configuration
     run_wrist_sleep_pipeline.ipynb
     gp-empatica-sleep
     configs/empatica_sleep.local.toml"]:::launch
-    WS_ACC_TEMP["Empatica acceleration and temperature
+    WS_ACC_TEMP["Empatica EmbracePlus acceleration and temperature
     silver/{participant}/{visit}/Empatica/acc.parquet
     silver/{participant}/{visit}/Empatica/tmp.parquet"]:::input
     WS_DIARY["Optional sleep diary
@@ -127,12 +127,12 @@ flowchart TD
     activity_intensity/activity_intensity_timeseries.csv"]:::output
   end
 
-  subgraph HR["3. Empatica BeliefPPG heart-rate pipeline"]
+  subgraph HR["3. Empatica EmbracePlus BeliefPPG heart-rate pipeline"]
     HR_LAUNCH["Pipeline launch and configuration
     run_heart_rate_pipeline.ipynb
     gp-heart-rate
     configs/heart_rate.local.toml"]:::launch
-    HR_PPG_ACC["Empatica PPG and acceleration
+    HR_PPG_ACC["Empatica EmbracePlus PPG and acceleration
     silver/{participant}/{visit}/Empatica/ppg.parquet
     silver/{participant}/{visit}/Empatica/acc.parquet"]:::input
     HR_GAPS["Recording portion selection
@@ -147,12 +147,12 @@ flowchart TD
     current config: beliefppg/hr_belief.csv"]:::output
   end
 
-  subgraph HRV["4. Empatica nocturnal HRV pipeline"]
+  subgraph HRV["4. Empatica EmbracePlus nocturnal HRV pipeline"]
     HRV_LAUNCH["Pipeline launch and configuration
     run_hrv_pipeline.ipynb
     gp-hrv
     configs/hrv.local.toml"]:::launch
-    HRV_PPG_ACC["Empatica PPG and acceleration
+    HRV_PPG_ACC["Empatica EmbracePlus PPG and acceleration
     silver/{participant}/{visit}/Empatica/ppg.parquet
     silver/{participant}/{visit}/Empatica/acc.parquet"]:::input
     HRV_WINDOWS["Sleep-window source

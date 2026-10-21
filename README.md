@@ -4,7 +4,7 @@
 
 Research wearable workflows for the DARE-FALLSPREDICT GP and DARE-FALLSPREDICT studies:
 
-- Empatica wrist sleep, circadian rhythm, activity intensity, heart rate and HRV
+- Empatica EmbracePlus wrist sleep, circadian rhythm, activity intensity, heart rate and HRV
 - GENEActiv wrist sleep, circadian rhythm and activity intensity
 - Lower-back IMU gait and time-in-bed processing
 - REDCap, FRAT-up import and combined cohort aggregation
@@ -24,7 +24,7 @@ cohort exports.
 
 ```mermaid
 flowchart TD
-    EMP["Empatica wrist data"] --> WRIST["Sleep, circadian rhythm and activity"]
+    EMP["Empatica EmbracePlus wrist data"] --> WRIST["Sleep, circadian rhythm and activity"]
     GEN["GENEActiv wrist data"] --> WRIST
     EMP --> CARDIO["Heart rate and nocturnal HRV"]
     IMU["Lower-back IMU data"] --> GAIT["Gait and time in bed"]
@@ -64,7 +64,7 @@ src/fallspredict_pipeline/     DARE-FALLSPREDICT configuration, commands and GEN
 ```
 
 Both adapters depend on `dare_wearables`; the core imports neither cohort.
-Empatica and GENEActiv preprocessing retain their device-specific loading and
+Empatica EmbracePlus and GENEActiv preprocessing retain their device-specific loading and
 nonwear rules, then feed the same `run_wrist_from_preprocessed` stage sequence.
 The shared lower-back runner accepts either cohort's configuration. Aggregation
 adapters supply sensor folders and gait QC policy explicitly. Existing import
@@ -132,7 +132,7 @@ committing. Inspect participant selection before any batch run.
 
 ## Input and output contracts
 
-Empatica sleep expects `silver/<participant>/<visit>/Empatica/acc.parquet` and
+Empatica EmbracePlus sleep expects `silver/<participant>/<visit>/Empatica/acc.parquet` and
 `temp.parquet`. HR and HRV expect `ppg.parquet` and `acc.parquet`. HRV also uses
 sleep windows from `Empatica/sleep_circadian/sleep_output_all_guiders.csv`.
 Optional diary, recruitment tracker and lower-back TIB inputs are configured
@@ -173,8 +173,26 @@ execution state. It reports locations, not sensitive values. It does not inspect
 Git history or certify arbitrary text as anonymous; keep future additions limited
 to reviewed code, prose and synthetic examples.
 
+## References
+
+1. **Sleep (sustained inactivity):** van Hees, V. T., et al. (2015).
+   [A Novel, Open Access Method to Assess Sleep Duration Using a Wrist-Worn Accelerometer](https://doi.org/10.1371/journal.pone.0142533).
+   *PLOS ONE*, 10(11), e0142533.
+2. **Sleep (HDCZA):** van Hees, V. T., et al. (2018).
+   [Estimating sleep parameters using an accelerometer without sleep diary](https://doi.org/10.1038/s41598-018-31266-z).
+   *Scientific Reports*, 8, 12975.
+3. **Heart rate (BeliefPPG):** Bieri, V., Streli, P., Demirel, B. U., and Holz, C. (2023).
+   [BeliefPPG: Uncertainty-aware heart rate estimation from PPG signals via belief propagation](https://proceedings.mlr.press/v216/bieri23a.html).
+   *UAI*, Proceedings of Machine Learning Research, 216, 173–183.
+4. **Heart-rate benchmarking:** Sicbaldi, M., et al. (2025).
+   [Benchmarking of open-source algorithms for heart rate estimation from motion-corrupted photoplethysmography](https://doi.org/10.1016/j.compbiomed.2025.110808).
+   *Computers in Biology and Medicine*, 196, 110808.
+5. **PPG beat detection (MSPTDfast):** Charlton, P. H., Mant, J., and Kyriacou, P. A. (2024).
+   [MSPTDfast: An Efficient Photoplethysmography Beat Detection Algorithm](https://doi.org/10.22489/CinC.2024.045).
+   *Computing in Cardiology*, 51, 1–4.
+
 ## Licensing and attribution
 
-This project is licensed under the [MIT License](LICENSE), copyright (c) 2026
-Marcello Sicbaldi. Third-party code retains its original notices; see
+This project is licensed under the [MIT License](LICENSE).
+Third-party code retains its original notices; see
 [third-party notices and provenance](THIRD_PARTY_NOTICES.md) and `licenses/`.

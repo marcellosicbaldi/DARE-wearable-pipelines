@@ -16,7 +16,7 @@ First consolidated release for the DARE-FALLSPREDICT GP and DARE-FALLSPREDICT we
 processing workflows.
 
 - Shared `dare_wearables` core with separate cohort configuration and commands.
-- Empatica and GENEActiv sleep, circadian rhythm and activity processing;
+- Empatica EmbracePlus and GENEActiv sleep, circadian rhythm and activity processing;
   lower-back gait/posture, HR/HRV and clinical aggregation.
 - Corrected timestamp alignment, gap/nonwear handling, zero-gait days and
   participant matching; explicit HRV interpolation reporting and rerun checks.

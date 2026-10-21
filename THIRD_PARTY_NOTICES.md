@@ -1,9 +1,9 @@
 # Third-party notices and provenance
 
-DARE-wearable-pipelines is licensed under the MIT License in `LICENSE`,
-copyright (c) 2026 Marcello Sicbaldi. Incorporated third-party code retains its
-original copyright and license notices below. Dependencies retain their own
-licenses; the project license does not replace them.
+DARE-wearable-pipelines is licensed under the MIT License in `LICENSE`.
+Incorporated third-party code retains its original copyright and license notices
+below. Dependencies retain their own licenses; the project license does not
+replace them.
 
 ## Incorporated source
 
