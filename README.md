@@ -4,10 +4,10 @@
 
 Research wearable workflows for the DARE-FALLSPREDICT GP and DARE-FALLSPREDICT studies:
 
-- Empatica EmbracePlus wrist sleep<sup>[1,2]</sup>, circadian rhythm, activity intensity, heart rate<sup>[3,4]</sup> and HRV<sup>[5]</sup>
-- GENEActiv wrist sleep<sup>[1,2]</sup>, circadian rhythm and activity intensity
-- McRoberts Dynaport 7 lower-back IMU gait<sup>[6]</sup> and time-in-bed processing
-- Clinical data, FRAT-up<sup>[7]</sup> import and combined cohort aggregation
+- Empatica EmbracePlus wrist sleep[1,2], circadian rhythm, activity intensity, heart rate[3,4] and HRV[5]
+- GENEActiv wrist sleep[1,2], circadian rhythm and activity intensity
+- McRoberts Dynaport 7 lower-back IMU gait[6] and time-in-bed processing
+- Clinical data, FRAT-up[7] import and combined cohort aggregation
 
 ## Workflow overview
 
