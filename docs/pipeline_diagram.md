@@ -14,7 +14,7 @@ flowchart TD
         PRE --> WRIST["Common sleep, circadian and activity stages"]
         IMU["McRoberts Dynaport 7 reader and continuous wear segments"] --> LB["Common gait and posture stages"]
         PPG["PPG and acceleration"] --> HR["HR and HRV stages"]
-        CLINICAL["REDCap and FRAT-up processing"] --> AGG["Common aggregation calculations"]
+        CLINICAL["Clinical data and FRAT-up processing"] --> AGG["Common aggregation calculations"]
         WRIST --> AGG
         LB --> AGG
         HR --> AGG
@@ -43,7 +43,7 @@ flowchart TD
     LB_OMX["Raw McRoberts Dynaport 7 files
     input_base_path/{participant}/{visit}/Lower Back"]:::input
     LB_REDCAP["Participant metadata
-    REDCap height file and cohort label"]:::input
+    Height file and cohort label from clinical data"]:::input
     LB_DECODE["Decode OMX to raw acceleration
     Extract device time and sampling frequency"]:::process
     LB_TSQC["Timestamp and sampling QC

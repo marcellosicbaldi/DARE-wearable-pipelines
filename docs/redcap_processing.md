@@ -1,8 +1,8 @@
-# DARE-FALLSPREDICT GP and DARE-FALLSPREDICT REDCap processing
+# DARE-FALLSPREDICT GP and DARE-FALLSPREDICT clinical data processing
 
 The extractor preserves a study-specific 185-column T0 schema. Clinical
 scoring conventions are documented below; participant values are computed
-from REDCap or imported from private FRAT-up CSVs. An optional private
+from clinical data or imported from private FRAT-up CSVs. An optional private
 reference file can be compared but never supplies replacement values.
 Additional FRAT-up inputs follow the original columns.
 
@@ -14,11 +14,11 @@ Implemented does not mean every participant has a value: missing source inputs
 remain visible. Historical scoring and codebook issues are described below.
 
 The same mapped T0 schema now supports `--cohort BO` (default) and `--cohort RA`.
-Each cohort selects its own default REDCap path and FRAT-up pair. To assemble
+Each cohort selects its own default clinical data path and FRAT-up pair. To assemble
 both sites' local sensor exports into a single dataset, use the separate final
 [combined cohort assembly](combined_cohorts.md) command. It aligns the mapped
 clinical, FRAT-up, follow-up and sensor columns with missing values where a field
-is absent. Raw REDCap event fields remain in a separate event export and are not
+is absent. Raw clinical data event fields remain in a separate event export and are not
 expanded into additional analysis columns.
 
 ## Run and merge with sensors
@@ -83,7 +83,7 @@ ravenna = process_redcap(cohort="RA")
 ## Local FRAT-up results and inputs
 
 Both aggregation commands automatically read
-`~/dare-data/gold/fratup` when processing REDCap.
+`~/dare-data/gold/fratup` when processing clinical data.
 Use `--fratup-dir <folder>` to change it, or `--no-fratup` to explicitly leave
 the score missing. The Python equivalents are `fratup_dir=folder` and
 `fratup_dir=None` on `process_redcap`, `aggregate_redcap`,
@@ -109,10 +109,10 @@ identifiers raise errors rather than silently returning an empty score column.
 
 **Identity-based matching.** Both input and result files must identify participants through
 `patient_id`/`subject`, or `record_id` (`id` is accepted as a record-ID alias).
-Record IDs are resolved through the REDCap baseline identity map and are never
-treated as patient IDs. When multiple identifiers are present they must agree.
+Record IDs are resolved through the baseline identity map in the clinical data and
+are never treated as patient IDs. When multiple identifiers are present they must agree.
 Input and result files can be reordered independently; their participant sets
-must match. Their identifiers are resolved separately through REDCap. The
+must match. Their identifiers are resolved separately through clinical data. The
 updated DARE-FALLSPREDICT GP and DARE-FALLSPREDICT T0 files contain both `record_id` and `patient_id`; the loader
 checks that these agree. Files without identifiers are rejected. There is no
 row-order fallback, and demographics are not used to establish identity.
@@ -135,7 +135,7 @@ Other inputs are appended as `fratup_input_<original_name>`. Binary input flags
 remain distinct from clinical questionnaire totals or disease/ATC categories:
 for example, `cognitionimpairment` is not interchangeable with `mmse`.
 A differing shared input is also preserved under this prefix
-and its discrepancy count is audited; it does not overwrite or backfill REDCap.
+and its discrepancy count is audited; it does not overwrite or backfill clinical data.
 
 All 26 original risk-factor inputs and supplied identifiers, including the six reused fields, are retained in
 `redcap_fratup_inputs.csv`, together with normalized `subject` and `source_row`
@@ -150,7 +150,7 @@ exports. Generated participant data stays in ignored `outputs/` files.
 ## Review of the colleague's fall code
 
 The central approach makes sense for retrospective reporting: assign a fall
-to a month using its **occurrence date**, while retaining the REDCap event in
+to a month using its **occurrence date**, while retaining the clinical data event in
 which staff recorded it. Excluding baseline fall history is also appropriate.
 The relative-calendar-month calculation is reasonable; the implementation here
 expresses its month-end rule explicitly with anniversary boundaries.
@@ -216,7 +216,7 @@ Italian `DD/MM/YYYY` dates are accepted. Invalid, pre-baseline, or out-of-window
 dates are retained and labelled but not allocated.
 
 `fall_month` is the occurrence month; `source_event_month` comes from the exact
-REDCap event name, including `mese_6__follow_up_arm_1`. A month-2 fall entered
+clinical data event name, including `mese_6__follow_up_arm_1`. A month-2 fall entered
 at month 5 contributes to month 2's date-based counts and retains its month-5
 source provenance. Baseline-history falls never enter prospective counts.
 
@@ -294,7 +294,7 @@ affected categories or totals as validated measures.
 A replacement JSON can be supplied with `--codebook`, or `--redcap-codebook`
 with `gp-aggregate-all`. It must identify its `source`. Each supplied
 `diseases` or `atc` object must map every target category to a list of positive
-integer REDCap codes. Wholly empty families are rejected. With replacement
+integer clinical data codes. Wholly empty families are rejected. With replacement
 codebooks, unrecognized source codes leave otherwise-negative flags/totals
 missing; known positives remain usable. Omitted families remain unresolved.
 

@@ -75,8 +75,8 @@ measurements for DARE-FALLSPREDICT GP and DARE-FALLSPREDICT rows where `gait_n_v
 preserving those three QC fields. This applies to existing sensor exports and
 does not alter the standalone gait aggregation described above. Missing
 valid-day counts are not treated as zero; populated measurements without counts
-require a refreshed source aggregation. REDCap's clinic-measured `gait_speed`
-is preserved. See [combined cohort exclusions](combined_cohorts.md#minimum-three-valid-days-or-nights).
+require a refreshed source aggregation. The clinic-measured `gait_speed` in the
+clinical data is preserved. See [combined cohort exclusions](combined_cohorts.md#minimum-three-valid-days-or-nights).
 
 ### Sleep
 

@@ -8,7 +8,7 @@
   `python -m` invocations when upgrading from 0.1.0.
 - Retain existing console command names, configuration filenames, input/output
   paths and cohort codes (`BO`/`RA`) for compatibility with existing analyses.
-- Separate study display names from legacy REDCap folder names.
+- Separate study display names from legacy clinical data folder names.
 
 ## 0.1.0 — 2026-10-06
 

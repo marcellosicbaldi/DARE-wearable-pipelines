@@ -4,17 +4,10 @@
 
 Research wearable workflows for the DARE-FALLSPREDICT GP and DARE-FALLSPREDICT studies:
 
-- Empatica EmbracePlus wrist sleep, circadian rhythm, activity intensity, heart rate and HRV
-- GENEActiv wrist sleep, circadian rhythm and activity intensity
-- McRoberts Dynaport 7 lower-back IMU gait and time-in-bed processing
-- REDCap, FRAT-up import and combined cohort aggregation
-
-This repository contains the sanitized public workflows, with regression cases and fixes
-for the reviewed processing errors and an extracted shared processing core.
-Installation uses a locked environment, and GitHub Actions validates the
-distribution. The project is MIT-licensed, with incorporated-source notices
-preserved alongside the code.
-The existing `fallspredict_gp_pipeline` / `fallspredict_pipeline` console commands are retained.
+- Empatica EmbracePlus wrist sleep<sup>[1,2]</sup>, circadian rhythm, activity intensity, heart rate<sup>[3,4]</sup> and HRV<sup>[5]</sup>
+- GENEActiv wrist sleep<sup>[1,2]</sup>, circadian rhythm and activity intensity
+- McRoberts Dynaport 7 lower-back IMU gait<sup>[6]</sup> and time-in-bed processing
+- Clinical data, FRAT-up<sup>[7]</sup> import and combined cohort aggregation
 
 ## Workflow overview
 
@@ -31,7 +24,7 @@ flowchart TD
     WRIST --> AGG["Participant and visit aggregation"]
     CARDIO --> AGG
     GAIT --> AGG
-    CLINICAL["REDCap and FRAT-up<sup>[7]</sup> data"] --> CLIN["Clinical processing"]
+    CLINICAL["Clinical data and FRAT-up<sup>[7]</sup>"] --> CLIN["Clinical processing"]
     AGG --> EXPORT["Combined cohort CSV exports"]
     CLIN --> EXPORT
 ```
@@ -141,7 +134,7 @@ privately. GENEActiv expects a participant/visit `.bin` recording; see the
 
 McRoberts Dynaport 7 lower-back processing expects
 `bronze/<participant>/<visit>/<sensor>/*.OMX`
-and requires REDCap metadata for gait processing. Its outputs include daily
+and requires clinical metadata for gait processing. Its outputs include daily
 gait, walking bouts, nonwear and time-in-bed tables. Wrist outputs live under
 the participant/visit/sensor folder, with `sleep_circadian`, `beliefppg`, `hrv`
 and `nocturnal_bursts` subdirectories as selected by the configuration.
@@ -157,7 +150,7 @@ gp-aggregate-redcap --redcap-csv "$HOME/dare-data/REDCap/Bologna/fallspredict_da
 ```
 
 See [combined cohort assembly](docs/combined_cohorts.md),
-[REDCap processing](docs/redcap_processing.md), and
+[clinical data processing](docs/redcap_processing.md), and
 [aggregation thresholds](docs/aggregation_thresholds_and_nonwear.md).
 
 ## Checks

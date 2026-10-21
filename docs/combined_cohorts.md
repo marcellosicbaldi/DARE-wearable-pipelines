@@ -1,7 +1,7 @@
 # Combined DARE-FALLSPREDICT GP and DARE-FALLSPREDICT dataset
 
 `gp-aggregate-cohorts` is the final local assembly step. It reads the completed
-sensor exports from each site, processes each site's REDCap with its own
+sensor exports from each site, processes each site's clinical data with its own
 FRAT-up files, applies the specified visual exclusions, minimum-data masks and column removals, and
 combines the rows using the union of the retained columns. It does
 not access the DARE-FALLSPREDICT server or recompute sensor features.
@@ -80,8 +80,8 @@ All defaults are relative to
 | --- | --- | --- |
 | DARE-FALLSPREDICT GP sensors | `silver/aggregation` | `--bologna-sensor-dir` |
 | DARE-FALLSPREDICT sensors | `silver/aggregation/Ravenna` | `--ravenna-sensor-dir` |
-| DARE-FALLSPREDICT GP REDCap | `REDCap/Bologna/fallspredict_data.csv` | `--bologna-redcap-csv` |
-| DARE-FALLSPREDICT REDCap | `REDCap/Ravenna/fallspredict_data.csv` | `--ravenna-redcap-csv` |
+| DARE-FALLSPREDICT GP clinical data | `REDCap/Bologna/fallspredict_data.csv` | `--bologna-redcap-csv` |
+| DARE-FALLSPREDICT clinical data | `REDCap/Ravenna/fallspredict_data.csv` | `--ravenna-redcap-csv` |
 | Both cohorts' FRAT-up files | `gold/fratup` | `--fratup-dir` |
 | Combined output | `gold/aggregation` | `--output-dir` |
 
@@ -117,7 +117,7 @@ Every final row is internally keyed by **`group`, `subject`, `visit`**;
 `subject` is omitted from exports only when `--save-subject-id FALSE` is used:
 
 - `group` is explicitly `BO` or `RA`, assigned from the selected cohort.
-- `subject` is resolved from REDCap `patient_id`; event rows are linked within
+- `subject` is resolved from `patient_id` in the clinical data; event rows are linked within
   their `record_id`. Record IDs, including DARE-FALLSPREDICT's `FP...` identifiers, are
   not used as patient IDs. Numeric subject IDs normalize leading zeros and
   trailing `.0`, with a minimum display width of four digits, as in the sensor
@@ -130,9 +130,9 @@ Every final row is internally keyed by **`group`, `subject`, `visit`**;
 The two sites are processed independently before concatenation. Identical
 numeric subject IDs in different cohorts cannot cross-match. Within a cohort,
 joins are outer joins with unique-key validation, retaining participants who
-have only REDCap or only sensors. `has_redcap` and `has_sensors` indicate whether
+have only clinical data or only sensors. `has_redcap` and `has_sensors` indicate whether
 a source record exists, not whether all of its measurements are complete.
-REDCap-only records without baseline remain in the population while their
+Records with only clinical data and no baseline remain in the population while their
 mapped T0 clinical values stay missing. Their raw events are exported separately.
 
 Unavailable fields are missing values, never filled with zero. CSV exports use
@@ -159,7 +159,7 @@ These rules live in `src/fallspredict_gp_pipeline/aggregation/analysis_exclusion
 applied by the final cohort assembly command, before schema alignment and
 coverage counts. They affect the combined, DARE-FALLSPREDICT GP and DARE-FALLSPREDICT analysis files
 for both mean and median sleep runs. They do not modify source sensor exports,
-REDCap records, FRAT-up files, or the earlier automatic per-window HRV filtering.
+clinical data records, FRAT-up files, or the earlier automatic per-window HRV filtering.
 
 ### Minimum three valid days or nights
 
@@ -202,8 +202,8 @@ HR and HRV standalone exports also apply their respective minimums.
 The final assembly retains all QC counts, including `gait_n_days`,
 `gait_n_valid_days`, `gait_mean_valid_hours`, each sleep guider's night count,
 HR counts, HRV counts and `hrv_n_windows`. Participant rows, source-presence
-flags and clinical variables are preserved. In particular, REDCap's
-clinic-measured **`gait_speed` is not a wearable feature** and is not masked.
+flags and clinical variables are preserved. In particular, the clinic-measured
+**`gait_speed` in the clinical data is not a wearable feature** and is not masked.
 The existing manual visual exclusions still apply separately.
 
 This is a participant-level coverage rule; it does not change gait's
@@ -296,7 +296,7 @@ assert not dataset.duplicated(["group", "subject", "visit"]).any()
 
 Both cohorts use the existing mapped T0 variables, questionnaire calculations,
 disease/ATC definitions, fall verification, and monthly follow-up rules described
-in [REDCap processing](redcap_processing.md). This applies the supplied notebook
+in [clinical data processing](redcap_processing.md). This applies the supplied notebook
 specification to the shared source field names; it is not a separate validation
 of DARE-FALLSPREDICT's clinical codebook. Historical mapping limitations remain visible
 in the mapping and codebook-issue exports. If a site's code definitions differ,
@@ -305,7 +305,7 @@ use `--bologna-codebook` or `--ravenna-codebook` for that site's replacement JSO
 FRAT-up selects `fratup_input_BO_T0.csv` and `result_BO_T0.csv` for DARE-FALLSPREDICT GP,
 and `fratup_input_RA_T0.csv` and `result_RA_T0.csv` for DARE-FALLSPREDICT. The alternative
 `results_` spelling is accepted. Both input and score files require identifiers;
-IDs are checked only against the selected site's REDCap. Private R code remains
+IDs are checked only against the selected site's clinical data. Private R code remains
 external. Distinct FRAT-up input fields are included in the same column union.
 
 The combined and cohort-specific analysis CSVs contain mapped clinical variables,
@@ -333,7 +333,7 @@ baseline predictor columns explicitly for prediction models.
 | `fallspredict_cohort_summary_T0.csv` | Cohort counts, matches, unmatched participants, FRAT-up coverage, and visual-exclusion counts. |
 | `fallspredict_column_coverage_T0.csv` | Column presence and nonmissing counts for each cohort. |
 | `fallspredict_source_files_T0.csv` | Exact local input paths selected for the run. |
-| `fallspredict_redcap_events.csv` | Union of all original REDCap rows/fields with cohort identity. |
+| `fallspredict_redcap_events.csv` | Union of all original clinical data rows/fields with cohort identity. |
 | `fallspredict_redcap_falls.csv` | Individual fall records and verification, distinguished by cohort. |
 | `fallspredict_redcap_fall_monthly.csv`, `fallspredict_redcap_followup_monthly.csv` | Calendar and source-event follow-up tables. |
 | `fallspredict_redcap_mapping.csv`, `fallspredict_redcap_codebook_issues.csv` | Clinical mapping assumptions and dictionary issues by cohort. |
@@ -347,7 +347,7 @@ other audit exports concern the same clinical data regardless of sleep variant.
 Read-only inspection of the supplied files found 200 DARE-FALLSPREDICT GP and 538 DARE-FALLSPREDICT
 baseline participants. DARE-FALLSPREDICT GP's previous sensor export contains 197 matched
 participants. DARE-FALLSPREDICT's local domain exports cover 529 distinct participants,
-all matching its REDCap patient IDs. With these inputs the expected combined
+all matching the patient IDs in its clinical data. With these inputs the expected combined
 population is 738 participants, including 12 without sensor rows.
 
 The new assembly command has **not been run on participant data**, following the
