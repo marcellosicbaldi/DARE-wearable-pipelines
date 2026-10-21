@@ -6,7 +6,7 @@ Research wearable workflows for the DARE-FALLSPREDICT GP and DARE-FALLSPREDICT s
 
 - Empatica EmbracePlus wrist sleep, circadian rhythm, activity intensity, heart rate and HRV
 - GENEActiv wrist sleep, circadian rhythm and activity intensity
-- Lower-back IMU gait and time-in-bed processing
+- McRoberts Dynaport 7 lower-back IMU gait and time-in-bed processing
 - REDCap, FRAT-up import and combined cohort aggregation
 
 This repository contains the sanitized public workflows, with regression cases and fixes
@@ -27,7 +27,7 @@ flowchart TD
     EMP["Empatica EmbracePlus wrist data"] --> WRIST["Sleep<sup>[1,2]</sup>, circadian rhythm and activity"]
     GEN["GENEActiv wrist data"] --> WRIST
     EMP --> CARDIO["Heart rate<sup>[3,4]</sup> and nocturnal HRV<sup>[5]</sup>"]
-    IMU["Lower-back IMU data"] --> GAIT["Gait<sup>[6]</sup> and time in bed"]
+    IMU["McRoberts Dynaport 7 lower-back IMU data"] --> GAIT["Gait<sup>[6]</sup> and time in bed"]
     WRIST --> AGG["Participant and visit aggregation"]
     CARDIO --> AGG
     GAIT --> AGG
@@ -139,7 +139,8 @@ Optional diary, recruitment tracker and lower-back TIB inputs are configured
 privately. GENEActiv expects a participant/visit `.bin` recording; see the
 [DARE-FALLSPREDICT input conventions](src/fallspredict_pipeline/README.md).
 
-Lower-back processing expects `bronze/<participant>/<visit>/<sensor>/*.OMX`
+McRoberts Dynaport 7 lower-back processing expects
+`bronze/<participant>/<visit>/<sensor>/*.OMX`
 and requires REDCap metadata for gait processing. Its outputs include daily
 gait, walking bouts, nonwear and time-in-bed tables. Wrist outputs live under
 the participant/visit/sensor folder, with `sleep_circadian`, `beliefppg`, `hrv`

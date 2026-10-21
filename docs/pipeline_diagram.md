@@ -12,7 +12,7 @@ flowchart TD
         EMP["Empatica EmbracePlus preprocessing"] --> PRE["Prepared wrist data"]
         GEN["GENEActiv preprocessing"] --> PRE
         PRE --> WRIST["Common sleep, circadian and activity stages"]
-        IMU["McRoberts reader and continuous wear segments"] --> LB["Common gait and posture stages"]
+        IMU["McRoberts Dynaport 7 reader and continuous wear segments"] --> LB["Common gait and posture stages"]
         PPG["PPG and acceleration"] --> HR["HR and HRV stages"]
         CLINICAL["REDCap and FRAT-up processing"] --> AGG["Common aggregation calculations"]
         WRIST --> AGG
@@ -35,12 +35,12 @@ flowchart TD
   classDef output fill:#eef8ee,stroke:#5b9a5b,color:#173817;
   classDef launch fill:#fff4dc,stroke:#d29c31,color:#4b3200;
 
-  subgraph LB["1. Lower-back McRoberts IMU pipeline"]
+  subgraph LB["1. Lower-back McRoberts Dynaport 7 IMU pipeline"]
     LB_LAUNCH["Pipeline launch and configuration
     run_lower_back_pipeline.ipynb
     gp-lower-back
     configs/lower_back.local.toml"]:::launch
-    LB_OMX["Raw McRoberts Dynaport MoveMonitor files
+    LB_OMX["Raw McRoberts Dynaport 7 files
     input_base_path/{participant}/{visit}/Lower Back"]:::input
     LB_REDCAP["Participant metadata
     REDCap height file and cohort label"]:::input
