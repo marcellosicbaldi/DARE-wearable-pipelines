@@ -31,7 +31,7 @@ flowchart TD
     WRIST --> AGG["Participant and visit aggregation"]
     CARDIO --> AGG
     GAIT --> AGG
-    CLINICAL["REDCap and FRAT-up data"] --> CLIN["Clinical processing"]
+    CLINICAL["REDCap and FRAT-up<sup>[7]</sup> data"] --> CLIN["Clinical processing"]
     AGG --> EXPORT["Combined cohort CSV exports"]
     CLIN --> EXPORT
 ```
@@ -193,6 +193,9 @@ to reviewed code, prose and synthetic examples.
 6. **Gait (MobGap):** Kirk, C., et al. (2026).
    [Mobgap: A State-of-the-Art Python Framework for Reproducible Estimation and Algorithm Validation of Digital Mobility Outcomes from a Single Wearable Device](https://doi.org/10.3390/s26134294).
    *Sensors*, 26(13), 4294.
+7. **Fall-risk assessment (FRAT-up):** Cattelani, L., et al. (2015).
+   [FRAT-up, a Web-based Fall-Risk Assessment Tool for Elderly People Living in the Community](https://doi.org/10.2196/jmir.4064).
+   *Journal of Medical Internet Research*, 17(2), e41.
 
 ## Licensing and attribution
 
