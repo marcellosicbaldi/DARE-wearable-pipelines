@@ -20,8 +20,8 @@ MAX_BYTES = 1_000_000
 # Exact reviewed documentation assets; other binary files remain disallowed.
 REVIEWED_BINARY_ASSETS = {
     "docs/images/study-setup.png": (
-        1_529_412,
-        "543bee2119665a688f901ba7b1cf081aa1a36bc88d01a7e8a349d817a2f54b13",
+        1_643_945,
+        "7952431edbf7d1d4f41a8b6687c6f911d7a12f4536bc798dc7d15fa91164bd12",
     ),
 }
 ALLOWED_SUFFIXES = {".py", ".md", ".toml", ".txt", ".ipynb", ".yml", ".yaml"}
