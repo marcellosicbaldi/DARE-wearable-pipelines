@@ -44,9 +44,6 @@ src/           Shared core and DARE-FALLSPREDICT GP/DARE-FALLSPREDICT adapters
 tests/         Synthetic regression tests
 ```
 
-Study data, saved notebook results, exploratory/legacy notebooks, local
-diagnostic reports, editor state and third-party reference PDFs are not included.
-
 ## Shared architecture
 
 Keep both cohorts in one repository and branch. Cohort differences are explicit
