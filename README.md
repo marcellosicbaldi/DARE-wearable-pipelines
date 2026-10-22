@@ -9,9 +9,11 @@ Research wearable workflows for the DARE-FALLSPREDICT GP and DARE-FALLSPREDICT s
 - McRoberts Dynaport 7 lower-back IMU gait[6] and time-in-bed processing
 - Clinical data, FRAT-up[7] import and combined cohort aggregation
 
-## Study setup & workflow overview
+## Study setup
 
 ![Side-by-side wearable sensor setups for DARE-FALLSPREDICT GP and DARE-FALLSPREDICT](docs/images/study-setup.png)
+
+## Workflow overview
 
 Device-specific preprocessing feeds shared feature extraction and aggregation
 for both studies. Sensor summaries are joined with clinical data for combined
