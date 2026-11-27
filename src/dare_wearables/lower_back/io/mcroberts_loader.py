@@ -2,6 +2,8 @@ import struct
 
 import numpy as np
 import pandas as pd
+from .timestamp_quality import TimestampOptions, quarantine_plan
+from dare_wearables.common.output_state import signature
 
 
 PACKET_SIZE = 512
@@ -44,7 +46,12 @@ def packet_sample_times_vector(ts, frac, ts_offset, sample_rate, modifier, sampl
     return start_time + offsets.astype("timedelta64[ns]")
 
 
-def read_dp7_as_dataframe_fast(filename, acc_sens=8, gyro_sens=500, verbose=1):
+def read_dp7_as_dataframe_fast(filename, acc_sens=8, gyro_sens=500, verbose=1, *, timestamps=None):
+    timestamps = timestamps or TimestampOptions()
+    timestamps.validate()
+    drop_packets, quality = (quarantine_plan(filename) if timestamps.policy != "strict" else
+                             (set(), {"policy": "strict", "revision": 1, "events": [],
+                                      "recording_discontinuities": [], "streams": []}))
     acc_factor = ACC_SENSITIVITY[acc_sens]
     gyr_factor = GYRO_SENSITIVITY[gyro_sens]
 
@@ -60,10 +67,12 @@ def read_dp7_as_dataframe_fast(filename, acc_sens=8, gyro_sens=500, verbose=1):
         if verbose:
             print(f"Packets: {num_packets}")
 
-        for _ in range(num_packets):
+        for packet_index in range(num_packets):
             packet = f.read(PACKET_SIZE)
             if not packet:
                 break
+            if packet_index in drop_packets:
+                continue
 
             sid = packet[1:2]
             if sid not in (b"a", b"g"):
@@ -114,6 +123,7 @@ def read_dp7_as_dataframe_fast(filename, acc_sens=8, gyro_sens=500, verbose=1):
         raise ValueError("Sensor streams have no aligned samples.")
     if df.gyro_datetime.duplicated().any():
         raise ValueError("Sensor alignment would reuse a gyroscope sample.")
+    max_alignment_error_ns = int((df.datetime-df.gyro_datetime).abs().max().value)
     df = df.drop(columns="gyro_datetime").reset_index(drop=True)
     df.attrs["sample_rate_hz"] = rate
     df.attrs["unmatched_acc_samples"] = len(acc) - len(df)
@@ -124,5 +134,13 @@ def read_dp7_as_dataframe_fast(filename, acc_sens=8, gyro_sens=500, verbose=1):
     df_rotated["ax"] = -df["ay"]
     df_rotated["gy"] = df["gx"]
     df_rotated["gx"] = -df["gy"]
+
+    quality["alignment"] = {"aligned_samples": len(df),
+        "unmatched_acc_samples": len(acc)-len(df), "unmatched_gyr_samples": len(gyr)-len(df),
+        "tolerance_seconds": .25/rate, "max_alignment_error_ns": max_alignment_error_ns,
+        "gyro_sample_reuse": False}
+    if quality.get("input_identity") is not None and quality["input_identity"] != signature({}, [filename]):
+        raise ValueError("OMX source changed during reading.")
+    df_rotated.attrs["timestamp_quality"] = quality
 
     return df_rotated

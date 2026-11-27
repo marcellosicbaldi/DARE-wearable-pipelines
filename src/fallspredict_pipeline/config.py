@@ -4,6 +4,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from dare_wearables.lower_back.nonwear.respiration import RespirationOptions
+from dare_wearables.lower_back.nonwear.ggir2023 import NonwearOptions
+from dare_wearables.lower_back.io.timestamp_quality import TimestampOptions
+from dare_wearables.lower_back.orientation import OrientationOptions
+
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover
@@ -189,6 +194,11 @@ class LowerBackConfig:
     run_gait: bool = True
     run_time_in_bed: bool = True
     save_omx_to_parquet: bool = True
+    protocol_hours: float | None = None
+    respiration: RespirationOptions = field(default_factory=RespirationOptions)
+    nonwear: NonwearOptions = field(default_factory=NonwearOptions)
+    timestamps: TimestampOptions = field(default_factory=TimestampOptions)
+    orientation: OrientationOptions = field(default_factory=OrientationOptions)
 
     @classmethod
     def from_toml(cls, config_path: str | Path) -> "LowerBackConfig":
@@ -212,6 +222,11 @@ class LowerBackConfig:
             run_gait=bool(section.get("run_gait", True)),
             run_time_in_bed=bool(section.get("run_time_in_bed", True)),
             save_omx_to_parquet=bool(section.get("save_omx_to_parquet", True)),
+            protocol_hours=section.get("protocol_hours"),
+            respiration=RespirationOptions.from_mapping(section.get("respiration")),
+            nonwear=NonwearOptions.from_mapping(section.get("nonwear")),
+            timestamps=TimestampOptions.from_mapping(section.get("timestamps")),
+            orientation=OrientationOptions.from_mapping(section.get("orientation")),
         )
 
 

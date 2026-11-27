@@ -134,7 +134,8 @@ class GaitProcessingTests(unittest.TestCase):
             with self.subTest(package=pkg), patch.object(module, 'read_dp7_as_dataframe_fast', return_value=raw.copy()), \
                  patch.object(module, 'autocalibrate', side_effect=lambda df, **kw: {'df': df}), \
                  patch.object(nonwear, 'vanhees2013', return_value=SimpleNamespace(nonwear_df=pl.DataFrame(), window_df=pl.DataFrame())):
-                result = module.preprocess_lowerback_file('synthetic.OMX', verbose=False)
+                from dare_wearables.lower_back.nonwear.ggir2023 import NonwearOptions
+                result = module.preprocess_lowerback_file('synthetic.OMX', verbose=False, nonwear=NonwearOptions(method='current'))
                 self.assertEqual(result['df'].timestamp.tolist(), [0., .01, 2.])
                 self.assertTrue(result['df'].wear.all())
 

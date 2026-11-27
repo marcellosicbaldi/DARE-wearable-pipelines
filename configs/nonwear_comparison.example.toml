@@ -1,0 +1,11 @@
+# Copy to nonwear_comparison.local.toml and edit that private copy.
+# Relative paths resolve from the configuration file's directory.
+[comparison]
+bronze_root = "~/dare-data/bronze"
+output_root = "~/dare-data/lower_back_nonwear_comparison"
+sensor = "McRoberts"
+visits = ["T0"]
+# Required: select participants explicitly, e.g. ["900001"].
+# Unlike the production runner, an empty list stops rather than processing all.
+participant_ids = []
+rscript = "Rscript"

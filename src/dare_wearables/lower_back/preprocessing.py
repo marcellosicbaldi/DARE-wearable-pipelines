@@ -7,6 +7,9 @@ import pandas as pd
 
 from dare_wearables.common.autocalibrate import autocalibrate
 from dare_wearables.lower_back.io.mcroberts_loader import read_dp7_as_dataframe_fast
+from dare_wearables.lower_back.nonwear.respiration import RespirationOptions, override_frame
+from dare_wearables.lower_back.nonwear.ggir2023 import NonwearOptions, detect_nonwear
+from dare_wearables.lower_back.io.timestamp_quality import TimestampOptions, processing_segments, invalid_intervals
 
 
 GRAV_MS2 = 9.80665
@@ -42,10 +45,25 @@ def preprocess_lowerback_file(
     *,
     sample_rate_hz: float = 100.0,
     max_samples: int = MAX_SAMPLES,
+    protocol_hours: float | None = None,
     verbose: bool = True,
     autocalibration_kwargs: dict[str, Any] | None = None,
     nonwear_kwargs: dict[str, Any] | None = None,
+    respiration: RespirationOptions | None = None,
+    nonwear: NonwearOptions | None = None,
+    timestamps: TimestampOptions | None = None,
 ) -> dict[str, Any]:
+    nonwear = nonwear or NonwearOptions()
+    nonwear.validate()
+    timestamp_options = timestamps or TimestampOptions()
+    timestamp_options.validate()
+    if protocol_hours is not None and (isinstance(protocol_hours, bool) or not np.isfinite(protocol_hours) or not 0 < protocol_hours <= 168):
+        raise ValueError("protocol_hours must be in (0, 168], or None for the historical sample cap.")
+    if timestamp_options.policy != "strict" and nonwear.method != "ggir_2023_matched":
+        raise ValueError("Timestamp recovery requires the ggir_2023_matched baseline.")
+    if nonwear.method == "ggir_2023_matched" and nonwear_kwargs:
+        raise ValueError("The GGIR matched profile fixes SD=13 mg, range=50 mg and two axes. "
+                         "nonwear_kwargs applies only to nonwear.method='current'.")
     try:
         import polars as pl
     except ModuleNotFoundError as exc:
@@ -58,7 +76,10 @@ def preprocess_lowerback_file(
     autocalibration_kwargs = autocalibration_kwargs or {}
     nonwear_kwargs = nonwear_kwargs or {}
 
-    df = read_dp7_as_dataframe_fast(filepath, verbose=int(bool(verbose)))
+    reader_kwargs = {"timestamps": timestamp_options} if timestamps is not None else {}
+    df = read_dp7_as_dataframe_fast(filepath, verbose=int(bool(verbose)), **reader_kwargs)
+    quality = df.attrs.get("timestamp_quality", {"policy": timestamp_options.policy, "events": [],
+                                               "recording_discontinuities": [], "streams": []})
     if not np.isclose(df.attrs.get("sample_rate_hz", sample_rate_hz), sample_rate_hz):
         raise ValueError("Recording sample rate does not match preprocessing sample_rate_hz.")
     df = df.rename(
@@ -81,18 +102,50 @@ def preprocess_lowerback_file(
         dropped = len_original - len(df)
         print(f"Found {dropped} bad timestamps ({np.round(dropped / sample_rate_hz / 60, 3)} minutes)")
 
-    if max_samples is not None:
+    if protocol_hours is not None and not df.empty:
+        # Match the reviewed benchmark's elapsed seven-day window. Missing time
+        # does not extend the protocol to accumulate seven days of samples.
+        end = df.datetime.iloc[0] + pd.Timedelta(hours=protocol_hours)
+        df = df.loc[df.datetime < end].copy()
+    elif max_samples is not None:
         df = df.iloc[:max_samples].copy()
 
     df["timestamp"] = (df["datetime"] - df["datetime"].min()).dt.total_seconds()
+    segments = processing_segments(df, sample_rate_hz, quality)
+    if nonwear.method == "ggir_2023_matched" and nonwear.step_seconds == 60 and not df.empty:
+        # The reviewed one-minute benchmark always restarted at every raw gap,
+        # including gaps in files that did not need anchor quarantine.
+        from dare_wearables.lower_back.nonwear.respiration import _segment_bounds
+        observed = _segment_bounds(pd.DatetimeIndex(df.datetime), sample_rate_hz)
+        edges = np.unique(np.r_[observed[1:, 0], np.asarray(segments, dtype=int)[1:, 0]
+                                if segments is not None else np.empty(0, dtype=int)])
+        segments = np.column_stack((np.r_[0, edges], np.r_[edges, len(df)])).tolist()
+    if segments is not None:
+        df.attrs["processing_segments"] = segments
+        bounds = np.asarray(segments)
+        df["time_segment"] = np.repeat(np.arange(len(bounds), dtype=np.int32), bounds[:, 1]-bounds[:, 0])
+    quality["analysis"] = {"n_samples": len(df), "segment_count": len(segments) if segments else 1,
+        "first_sample": str(df.datetime.iloc[0]) if len(df) else None,
+        "last_sample": str(df.datetime.iloc[-1]) if len(df) else None}
+    df.attrs["timestamp_quality"] = quality
+    time_invalid = invalid_intervals(df, sample_rate_hz, quality)
+    timing = {"timestamp_options": timestamp_options, "timestamp_quality": quality,
+              "time_invalid_intervals": time_invalid}
 
     if df.empty:
         df["wear"] = pd.Series(dtype=bool)
+        diagnostics = {}
+        if respiration is not None and respiration.enabled:
+            diagnostics["respiration"] = override_frame(df, sample_rate_hz, respiration)
         return {
             "df": df,
             "calibration": None,
             "nonwear_bouts": pd.DataFrame(columns=["start", "end"]),
             "nonwear_windows": pd.DataFrame(),
+            "nonwear_options": nonwear,
+            "nonwear_provenance": {"method": nonwear.method, "decision": "empty recording"},
+            **timing,
+            **diagnostics,
         }
 
     accel_pl = pl.DataFrame(
@@ -128,24 +181,34 @@ def preprocess_lowerback_file(
             }
         )
 
-    nonwear_result = vanhees2013(
-        accel_pl,
-        ts_col="ts",
-        x_col="x",
-        y_col="y",
-        z_col="z",
-        freq=sample_rate_hz,
-        quiet=not verbose,
-        return_debug=True,
-        **nonwear_kwargs,
-    )
-
-    nonwear_bouts = _pl_to_pandas(nonwear_result.nonwear_df)
+    if nonwear.method == "ggir_2023_matched":
+        segment_kwargs = {"segment_bounds": segments} if segments is not None else {}
+        nonwear_result = detect_nonwear(accel_pl, freq=sample_rate_hz, options=nonwear, **segment_kwargs)
+        # Polars to_dict uses Python datetimes and loses sub-microsecond ends.
+        nonwear_bouts = nonwear_result.nonwear_df.to_pandas()
+        nonwear_windows = nonwear_result.window_df.to_pandas()
+        nonwear_provenance = nonwear_result.provenance
+    else:
+        nonwear_result = vanhees2013(
+            accel_pl, ts_col="ts", x_col="x", y_col="y", z_col="z",
+            freq=sample_rate_hz, quiet=not verbose, return_debug=True, **nonwear_kwargs,
+        )
+        nonwear_bouts = _pl_to_pandas(nonwear_result.nonwear_df)
+        nonwear_windows = _pl_to_pandas(nonwear_result.window_df)
+        nonwear_provenance = {"method": "current", "overrides": nonwear_kwargs}
     if not nonwear_bouts.empty:
         nonwear_bouts["start"] = pd.to_datetime(nonwear_bouts["start"])
         nonwear_bouts["end"] = pd.to_datetime(nonwear_bouts["end"])
 
     df["wear"] = _build_wear_mask_from_nonwear(df["datetime"], nonwear_bouts)
+    diagnostics = {}
+    if respiration is not None and respiration.enabled:
+        diagnostics["accelerometer_nonwear_bouts"] = nonwear_bouts
+        diagnostics["respiration"] = override_frame(df, sample_rate_hz, respiration)
+        final = diagnostics["respiration"]["nonwear_bouts"]
+        nonwear_bouts = final[["start", "end"]].copy()
+        # Existing preprocessing consumers expect inclusive timestamp ends.
+        nonwear_bouts["end"] = pd.DatetimeIndex(df.datetime)[final.stop_sample.to_numpy(dtype=int) - 1]
     df[["acc_x", "acc_y", "acc_z"]] *= GRAV_MS2
 
     if verbose:
@@ -156,5 +219,9 @@ def preprocess_lowerback_file(
         "df": df,
         "calibration": calibration,
         "nonwear_bouts": nonwear_bouts,
-        "nonwear_windows": _pl_to_pandas(nonwear_result.window_df),
+        "nonwear_windows": nonwear_windows,
+        "nonwear_options": nonwear,
+        "nonwear_provenance": nonwear_provenance,
+        **timing,
+        **diagnostics,
     }

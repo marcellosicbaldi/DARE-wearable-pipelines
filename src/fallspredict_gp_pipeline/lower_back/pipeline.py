@@ -1,5 +1,9 @@
 """fallspredict_gp_pipeline lower-back defaults over the shared processing runner."""
 from pathlib import Path
+from dare_wearables.lower_back.nonwear.ggir2023 import NonwearOptions
+from dare_wearables.lower_back.io.timestamp_quality import TimestampOptions
+from dare_wearables.lower_back.orientation import OrientationOptions
+from dare_wearables.lower_back.nonwear.respiration import RespirationOptions
 from ..config import LowerBackConfig
 from dare_wearables.lower_back import pipeline as _shared
 from dare_wearables.lower_back.pipeline import (
@@ -22,10 +26,17 @@ def main(*, bronze_root: str | Path, silver_root: str | Path,
          redcap_csv: str | Path | None = None, visits: list[str] | None = None,
          sensor: str = "McRoberts", min_size_bytes: int = MIN_SIZE,
          participant_ids: list[str] | None = None, run_gait: bool = True,
-         run_time_in_bed: bool = True, save_omx_to_parquet: bool = True) -> None:
+         run_time_in_bed: bool = True, save_omx_to_parquet: bool = True,
+         protocol_hours: float | None = None,
+         respiration: RespirationOptions | None = None,
+         nonwear: NonwearOptions | None = None,
+         timestamps: TimestampOptions | None = None,
+         orientation: OrientationOptions | None = None) -> None:
     return _shared.main(
         bronze_root=bronze_root, silver_root=silver_root, redcap_csv=redcap_csv,
         visits=visits, sensor=sensor, min_size_bytes=min_size_bytes,
         participant_ids=participant_ids, run_gait=run_gait,
         run_time_in_bed=run_time_in_bed, save_omx_to_parquet=save_omx_to_parquet,
+        protocol_hours=protocol_hours,
+        respiration=respiration, nonwear=nonwear, timestamps=timestamps, orientation=orientation,
     )
