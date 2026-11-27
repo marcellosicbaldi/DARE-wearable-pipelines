@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Move macOS CI to the supported Apple Silicon `macos-15` runner after the
+  retirement of `macos-14`.
 - Declare the reviewed GP T0 profile in the standard GP example, with explicit
   timestamp recovery and inversion-only options. Retain compatibility API
   defaults and the Ravenna nonwear example; existing private TOML files require
