@@ -97,14 +97,38 @@ class GaitOrientationTests(unittest.TestCase):
         self.assertEqual(get_participant_height(clinical, '0089'), 1.6)
         self.assertAlmostEqual(get_sensor_height(clinical, subject='0089'), .9856)
 
-    def test_fixed_sequence_without_contacts_returns_no_bouts(self):
+    def test_stationary_fixed_sequence_has_no_walking_bouts(self):
         from dare_wearables.lower_back.gait.functions import process_gait_data
         count = 3000
         data = pd.DataFrame({'timestamp': np.arange(count)/100, 'acc_x': 9.80665,
                              'acc_y': 0., 'acc_z': 0., 'gyr_x': 0., 'gyr_y': 0., 'gyr_z': 0.})
         fixed_gs = pd.DataFrame({'start': [0], 'end': [count]}, index=pd.Index([0], name='gs_id'))
         result = process_gait_data(data, gait_sequences=fixed_gs, orientation_mode="sequence")
+        # Filter roundoff can produce candidate contacts on a constant signal
+        # on some platforms; stride selection still rejects all walking bouts.
+        self.assertTrue(result['per_wb_params'] is None or result['per_wb_params'].empty)
+        self.assertTrue(result['step_counts'] is None or result['step_counts'].empty)
+        self.assertEqual(len(result['orientation']), 1)
+
+    def test_explicit_no_contacts_skips_parameter_extraction(self):
+        from dare_wearables.lower_back.gait import functions as gait
+        count = 3000
+        data = pd.DataFrame({'timestamp': np.arange(count)/100, 'acc_x': 9.80665,
+                             'acc_y': 0., 'acc_z': 0., 'gyr_x': 0., 'gyr_y': 0., 'gyr_z': 0.})
+        fixed = pd.DataFrame({'start': [0], 'end': [count]}, index=pd.Index([0], name='gs_id'))
+
+        def no_contacts(detector, *args, **kwargs):
+            detector.ic_list_ = pd.DataFrame({'ic': pd.Series(dtype='int64')})
+            detector.ic_list_.index.name = 'step_id'
+            return detector
+
+        with patch.object(gait.IcdIonescu, 'detect', no_contacts), \
+                patch.object(gait.CadFromIcDetector, 'calculate',
+                             side_effect=AssertionError('No contacts must skip cadence extraction')):
+            result = gait.process_gait_data(data, gait_sequences=fixed, orientation_mode='sequence')
         self.assertIsNone(result['per_wb_params'])
+        self.assertIsNone(result['step_counts'])
+        self.assertTrue(result['initial_contacts'].empty)
         self.assertEqual(len(result['orientation']), 1)
 
     def test_main_shares_inversion_only_data_between_gait_and_posture(self):
