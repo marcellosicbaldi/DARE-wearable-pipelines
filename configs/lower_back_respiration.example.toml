@@ -1,0 +1,36 @@
+# Copy to lower_back_respiration.local.toml and set absolute private paths.
+# This assessment writes to a new run folder; it does not compute gait or TIB.
+[lower_back]
+bronze_root = "~/dare-data/bronze"
+silver_root = "~/dare-data/lower_back_respiration_assessment"
+sensor = "McRoberts"
+visits = ["T0"]
+min_size_bytes = 1048576
+participant_ids = [] # all participants; inspect --inventory-only before execution
+run_gait = false
+run_time_in_bed = false
+save_omx_to_parquet = false
+
+# Experimental gyro evidence: any positive axis can rescue existing nonwear.
+# No time-of-day restriction. Rate endpoints are excluded (10 < BR < 30).
+[lower_back.respiration]
+enabled = true
+window_seconds = 60.0
+overlap = 0.5
+min_nonwear_bout_seconds = 900.0 # final bouts <15 min become wear; exactly 15 min stays nonwear
+band_brpm = [10.0, 30.0]
+save_window_features = true
+min_band_rms_dps = 0.01
+min_band_power_fraction = 0.5
+min_peak_concentration = 0.5
+min_peak_to_background_db = 6.0
+
+# Production: GGIR 2023 matched thresholds, 60-min windows / 15-min step; no end-of-recording extension.
+[lower_back.nonwear]
+method = "ggir_2023_matched"
+window_seconds = 3600.0
+end_of_recording_correction = false
+
+# Explicit recovery is available for verified rollover anchors; see timestamp-quality docs.
+[lower_back.timestamps]
+policy = "strict" # or "quarantine_bad_anchors"

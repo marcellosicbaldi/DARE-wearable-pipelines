@@ -42,7 +42,7 @@ def check_archive(path: Path, *, expected_version: str) -> list[str]:
         required = [f'src/{package}/__init__.py' for package in PACKAGES]
         required += ['LICENSE', 'README.md', 'pyproject.toml', 'uv.lock', '.python-version',
                      'THIRD_PARTY_NOTICES.md', 'licenses/nimbaldetach-LICENSE.txt',
-                     'licenses/neurokit2-LICENSE.txt', 'scripts/check_install.py',
+                     'licenses/neurokit2-LICENSE.txt', 'licenses/GGIR-LICENSE.txt', 'scripts/check_install.py',
                      'scripts/check_distributions.py', 'configs/empatica_sleep.example.toml']
         metadata_name = prefix + 'PKG-INFO'
     for name in required:
@@ -77,7 +77,8 @@ def check_archive(path: Path, *, expected_version: str) -> list[str]:
         if 'Private :: Do Not Upload' not in meta.get_all('Classifier', []):
             issues.append('missing PyPI upload prevention classifier')
     if path.suffix == '.whl':
-        for suffix in ('LICENSE', 'THIRD_PARTY_NOTICES.md', 'licenses/nimbaldetach-LICENSE.txt', 'licenses/neurokit2-LICENSE.txt'):
+        for suffix in ('LICENSE', 'THIRD_PARTY_NOTICES.md', 'licenses/nimbaldetach-LICENSE.txt',
+                       'licenses/neurokit2-LICENSE.txt', 'licenses/GGIR-LICENSE.txt'):
             if not any(name.endswith('/' + suffix) for name in files):
                 issues.append(f'missing license or notice: {suffix}')
     return issues

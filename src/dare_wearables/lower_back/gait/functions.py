@@ -24,11 +24,14 @@ from mobgap.laterality import LrcUllrich
 from mobgap.consts import GRAV_MS2
 
 from dare_wearables.lower_back.preprocessing import preprocess_lowerback_file
+from dare_wearables.lower_back.gait.orientation import align_gait_sequence, rotate_body_frame
+from dare_wearables.lower_back.gait.events import add_bout_event_counts
 
 # ================
 # Define functions
 # ================
-def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_condition="free_living"):
+def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_condition="free_living",
+                      *, participant_height_m=None, orientation_mode="none", gait_sequences=None):
     """
     Process gait data using the appropriate pipeline based on cohort.
  
@@ -42,6 +45,15 @@ def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_conditio
         Subject sensor height in meters, used for stride length calculation.
     measurement_condition : str
         Measurement condition (e.g., "free_living")
+    participant_height_m : float or None
+        Total body height for DMO plausibility thresholds, distinct from sensor height.
+    orientation_mode : {"sequence", "none"}
+        Production preserves axes after the shared belt-inversion correction.
+        The explicit "sequence" mode performs tilt alignment for experiments
+        only; it is never enabled by the full lower-back runner.
+    gait_sequences : DataFrame or None
+        Optional fixed boundaries for controlled comparisons. Detection otherwise
+        uses the unmodified acceleration magnitude.
     Adapted by Jose AS on 09.06.2025
  
     Returns:
@@ -49,6 +61,10 @@ def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_conditio
     dict
         Dictionary containing processed gait parameters and results
     """
+    if orientation_mode not in ("sequence", "none"):
+        raise ValueError("orientation_mode must be 'sequence' or 'none'.")
+    if participant_height_m is not None and (not np.isfinite(participant_height_m) or participant_height_m <= 0):
+        raise ValueError("participant_height_m must be positive and finite.")
     # Define pipelines with their configurations
     regular_walking: Final = MappingProxyType({
         "gait_sequence_detection": GsdIonescu(), # Changed from GsdIluz() to GsdIonescu() because orientation-independent(),
@@ -111,28 +127,47 @@ def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_conditio
     wba = pipeline["wba"]
  
     # Gait sequence detection
-    gsd.detect(data=imu_data, sampling_rate_hz=sampling_rate_hz)
-    gait_sequences = gsd.gs_list_
+    if gait_sequences is None:
+        gsd.detect(data=imu_data, sampling_rate_hz=sampling_rate_hz)
+        gait_sequences = gsd.gs_list_
+    else:
+        gait_sequences = gait_sequences.copy()
+
+    diagnostics = {"gait_sequences": gait_sequences, "orientation": pd.DataFrame()}
 
     if gait_sequences.empty:
             return {
         "aggregated_results": None,
         "per_wb_params": None,
         "final_strides": None,
-        "stride_list": None
+        "stride_list": None,
+        "step_counts": None,
+        **diagnostics,
     }
  
     # Process gait sequences
     gs_iterator = GsIterator()
-    for (_, gs_data), r in gs_iterator.iterate(imu_data, gait_sequences):
+    orientations = []
+    for (region, gs_data), r in gs_iterator.iterate(imu_data, gait_sequences):
+        rotation = np.eye(3)
+        if orientation_mode == "sequence":
+            gs_data, rotation, info = align_gait_sequence(gs_data, sampling_rate_hz)
+            orientations.append({"gs_id": region.id, "start": region.start, "end": region.end, **info,
+                                 **{f"r{i}{j}": rotation[i, j] for i in range(3) for j in range(3)}})
         icd = icd.clone().detect(gs_data, sampling_rate_hz=sampling_rate_hz)
         lrc = lrc.clone().predict(gs_data, icd.ic_list_, sampling_rate_hz=sampling_rate_hz)
         r.ic_list = lrc.ic_lr_list_
         turn = turn.clone().detect(gs_data, sampling_rate_hz=sampling_rate_hz)
         r.turn_list = turn.turn_list_
+        if len(r.ic_list) < 2:
+            continue
         refined_gs, refined_ic_list = refine_gs(r.ic_list)
  
         with gs_iterator.subregion(refined_gs) as ((_, refined_gs_data), rr):
+            if orientation_mode == "sequence":
+                # The iterator slices its original input. Reuse the GS rotation
+                # so extraction does not silently revert to uncorrected signals.
+                refined_gs_data = rotate_body_frame(refined_gs_data, rotation)
             cad = cad.clone().calculate(
                 refined_gs_data,
                 initial_contacts=refined_ic_list,
@@ -159,6 +194,8 @@ def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_conditio
  
     # Process results
     results = gs_iterator.results_
+    diagnostics.update(orientation=pd.DataFrame(orientations), initial_contacts=results.ic_list,
+                       turns=results.turn_list)
  
     # Combine results
     combined_results = pd.concat(
@@ -169,6 +206,9 @@ def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_conditio
         ],
         axis=1,
     )
+    if combined_results.empty or results.ic_list.empty:
+        return {"aggregated_results": None, "per_wb_params": None, "final_strides": None,
+                "stride_list": None, "step_counts": None, **diagnostics}
     
     # Get stride list
     stride_list = (
@@ -197,6 +237,7 @@ def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_conditio
             "final_strides": None,
             "stride_list": stride_list,
             "step_counts": None,
+            **diagnostics,
         }
     
     # Create flat index
@@ -220,8 +261,6 @@ def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_conditio
  
     # Extend with per-stride parameters
     params_to_aggregate = [
-        "n_raw_initial_contacts",
-        "n_turns",
         "stride_duration_s",
         "cadence_spm",
         "stride_length_m",
@@ -236,7 +275,8 @@ def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_conditio
         ],
         axis=1,
     )
-    step_counts = final_strides.groupby(level=0).size()
+    per_wb_params = add_bout_event_counts(per_wb_params, results.ic_list, results.turn_list)
+    step_counts = per_wb_params["n_raw_initial_contacts"].copy()
 
     # Apply thresholds
     thresholds = pipeline["dmo_thresholds"]
@@ -244,7 +284,7 @@ def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_conditio
         per_wb_params,
         thresholds,
         cohort=cohort,
-        height_m=sensor_height_m,
+        height_m=participant_height_m,
         measurement_condition=measurement_condition,
     )
  
@@ -259,7 +299,8 @@ def process_gait_data(df, cohort="HA", sensor_height_m=1.0, measurement_conditio
         "per_wb_params": per_wb_params,
         "final_strides": final_strides,
         "stride_list": stride_list,
-        "step_counts": step_counts
+        "step_counts": step_counts,
+        **diagnostics,
     }
  
 def save_results_mobi(res, save_dir, format='csv'):
@@ -348,6 +389,16 @@ def get_sensor_height(df_clin, method="mobilise", subject=None):
     if subject is None:
         return rows
     values = rows.sensor_height.unique()
+    if len(values) != 1:
+        raise ValueError(f"Missing or conflicting baseline height for {subject}.")
+    return float(values[0])
+
+
+def get_participant_height(df_clin, subject):
+    """Return total baseline body height in metres, not derived sensor height."""
+    rows = get_sensor_height(df_clin)
+    rows = _participant_baseline(rows, subject)
+    values = rows.Height.unique()
     if len(values) != 1:
         raise ValueError(f"Missing or conflicting baseline height for {subject}.")
     return float(values[0])

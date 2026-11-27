@@ -1,15 +1,46 @@
-# No real participant identifiers or institution-specific paths are included.
-# Example only. Copy to lower_back.local.toml and set private paths.
-# DARE-FALLSPREDICT GP data paths must be absolute (a leading ~ is expanded).
-
+# Reviewed GP T0 production profile: selected nonwear and inversion only.
+# Copy to lower_back.local.toml and set absolute private paths.
+# Use scripts/run_lower_back_dataset.py for isolated, resumable cohort runs.
 [lower_back]
 bronze_root = "~/dare-data/bronze"
-silver_root = "~/dare-data/silver"
+silver_root = "~/dare-data/lower_back_production_runs"
 redcap_csv = "~/dare-data/REDCap/fallspredict_data.csv"
 sensor = "McRoberts"
 visits = ["T0"]
-min_size_bytes = 1048576 # 1 MB
-participant_ids = []
+participant_ids = [] # all numeric participant directories
+min_size_bytes = 1048576
 run_gait = true
 run_time_in_bed = true
 save_omx_to_parquet = false
+protocol_hours = 168.0
+
+[lower_back.orientation]
+method = "inversion" # only identity or a 180-degree PA rotation; no tilt alignment
+min_sequences = 3
+min_evidence_seconds = 60.0
+min_sequence_seconds = 10.0
+weight_cap_seconds = 60.0
+min_consensus_fraction = 0.9
+
+[lower_back.nonwear]
+method = "ggir_2023_matched"
+window_seconds = 1800.0
+step_seconds = 60.0
+axes_required = 2
+postprocessing = true
+end_of_recording_correction = false
+
+[lower_back.respiration]
+enabled = true
+window_seconds = 30.0
+overlap = 0.5
+min_nonwear_bout_seconds = 900.0
+band_brpm = [10.0, 30.0]
+save_window_features = true
+min_band_rms_dps = 0.01
+min_band_power_fraction = 0.5
+min_peak_concentration = 0.5
+min_peak_to_background_db = 6.0
+
+[lower_back.timestamps]
+policy = "quarantine_bad_anchors"

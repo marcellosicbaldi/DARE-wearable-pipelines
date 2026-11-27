@@ -140,6 +140,7 @@ def fill_short_nonwear_between_lying(
     lying_1hz: pd.Series,
     max_nonwear="40min",
     edge_tol="2min",
+    observed_1hz=None,
 ):
     """
     If a nonwear bout is <= max_nonwear and there is lying within edge_tol
@@ -150,8 +151,11 @@ def fill_short_nonwear_between_lying(
     """
     wear = wear_1hz.sort_index().fillna(False).astype(bool)
     lying = lying_1hz.reindex(wear.index).fillna(False).astype(bool)
+    observed = (pd.Series(True, index=wear.index) if observed_1hz is None else
+                observed_1hz.reindex(wear.index).fillna(False).astype(bool))
+    wear = wear & observed
 
-    nonwear_bouts = bool_to_bouts(~wear, state=True)  # bouts where nonwear=True
+    nonwear_bouts = bool_to_bouts((~wear) & observed, state=True)
     if nonwear_bouts.empty:
         return wear, nonwear_bouts, nonwear_bouts
 
@@ -166,6 +170,8 @@ def fill_short_nonwear_between_lying(
         dur_s = (e - s).total_seconds()
         if dur_s > max_s:
             continue
+        if observed_1hz is not None and not observed.loc[s:e].all():
+            continue
 
         # check for lying immediately before and after the gap (with tolerance windows)
         pre = lying.loc[max(lying.index[0], s - tol): s]
@@ -176,7 +182,7 @@ def fill_short_nonwear_between_lying(
             filled.append((s, e))
 
     nonwear_filled = pd.DataFrame(filled, columns=["start", "end"])
-    return wear_fixed, nonwear_bouts, nonwear_filled
+    return wear_fixed & observed, nonwear_bouts, nonwear_filled
 
 def vanhees_tib_from_bouts(
     lying_bouts: pd.DataFrame,
@@ -637,6 +643,7 @@ def qc_tib_night_wear(
     tib_min_h=3.0,
     tib_max_h=14.0,
     min_overlap_night_h=4.0,
+    observed_1hz=None,
 ):
     """
     Quality-control daily TIB windows to handle cases where the sensor is removed during the night.
@@ -672,6 +679,9 @@ def qc_tib_night_wear(
         return tib_qc, tib_qc.copy()
 
     w = wear_1hz.sort_index().fillna(False).astype(bool)
+    observed = (pd.Series(True, index=w.index) if observed_1hz is None else
+                observed_1hz.reindex(w.index).fillna(False).astype(bool))
+    w = w & observed
 
     tib = tib_df.copy()
     for c in ["day_start", "day_end", "tib_start", "tib_end"]:
@@ -690,7 +700,7 @@ def qc_tib_night_wear(
         if ww.empty:
             return 0.0
 
-        nonwear = (~ww).astype(int)
+        nonwear = ((~ww) & observed.reindex(ww.index)).astype(int)
 
         # run-length encode nonwear
         change = nonwear.ne(nonwear.shift())
@@ -777,6 +787,10 @@ def qc_tib_night_wear(
             "tib_valid": tib_valid,
             "invalid_reasons": ";".join(reasons),
         })
+        if observed_1hz is not None:
+            row["observed_hours_night"] = float(observed.loc[ns:ne].sum()/3600)
+            row["time_invalid_hours_night"] = float((~observed.loc[ns:ne]).sum()/3600)
+            row["observed_frac_in_tib"] = float(observed.loc[ts:te].mean()) if len(ww_tib) else 0.
         out.append(row)
 
     tib_qc = pd.DataFrame(out)

@@ -1,0 +1,12 @@
+# Independent annotation app: reads raw data and diary; writes labels and cache only.
+# Copy to nonwear_annotation.local.toml and set private paths.
+[annotation]
+bronze_root = "~/dare-data/bronze"
+diary_csv = "~/dare-data/REDCap/fallspredict_data.csv"
+output_root = "../outputs/nonwear_annotation/labels"
+cache_root = "../outputs/nonwear_annotation/cache"
+subject = "900001" # invented example; choose a real participant in the private copy
+visit = "T0"
+timestamp_policy = "quarantine_bad_anchors"
+protocol_hours = 168.0
+reviewer = ""

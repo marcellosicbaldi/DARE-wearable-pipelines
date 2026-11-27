@@ -4,13 +4,13 @@ import numpy as np
 import pandas as pd
 
 WB_COLUMNS = ["start", "end", "duration_s", "n_strides", "stride_duration_s",
-              "cadence_spm", "stride_length_m", "walking_speed_mps"]
+              "cadence_spm", "stride_length_m", "walking_speed_mps", "n_raw_initial_contacts", "n_turns"]
 
 
-def aggregate_bouts(bouts, *, cohort, sensor_height_m):
+def aggregate_bouts(bouts, *, cohort, sensor_height_m, participant_height_m=None):
     from mobgap.aggregation import MobilisedAggregator, apply_thresholds, get_mobilised_dmo_thresholds
     mask = apply_thresholds(bouts, get_mobilised_dmo_thresholds(), cohort=cohort,
-                            height_m=sensor_height_m, measurement_condition="free_living")
+                            height_m=participant_height_m, measurement_condition="free_living")
     result = MobilisedAggregator(groupby=None).aggregate(bouts, wb_dmos_mask=mask).aggregated_data_
     if bouts.empty:
         result = pd.DataFrame([{c: (0.0 if c.endswith(("__count", "__sum")) or c == "total_walking_duration_min" else np.nan)
@@ -18,15 +18,16 @@ def aggregate_bouts(bouts, *, cohort, sensor_height_m):
     return result
 
 
-def run_daily_gait(df, *, subject, cohort, sensor_height_m, save_folder, processor):
+def run_daily_gait(df, *, subject, cohort, sensor_height_m, save_folder, processor,
+                   participant_height_m=None):
     folder = Path(save_folder)
     folder.mkdir(parents=True, exist_ok=True)
     paths = {name: folder / f"{subject}_{name}.csv" for name in
-             ("per_wb", "day_aggregation", "walking_bouts_datetime", "gait_status")}
+             ("per_wb", "day_aggregation", "walking_bouts_datetime", "orientation_qc", "gait_status")}
     # Invalidate the preceding run even if validation or an algorithm fails.
     for path in paths.values():
         path.unlink(missing_ok=True)
-    statuses, daily, all_bouts, dated_bouts = [], [], [], []
+    statuses, daily, all_bouts, dated_bouts, orientations = [], [], [], [], []
     try:
         if not isinstance(df.index, pd.DatetimeIndex) or df.index.hasnans or df.index.has_duplicates or not df.index.is_monotonic_increasing:
             raise ValueError("Gait input requires unique, increasing datetime timestamps.")
@@ -41,6 +42,8 @@ def run_daily_gait(df, *, subject, cohort, sensor_height_m, save_folder, process
                 raise ValueError("Lower-back gait requires 100 Hz samples.")
             breaks = (~day.wear.astype(bool) | ~day.wear.shift(fill_value=False).astype(bool) |
                       ~np.isclose(delta, 0.01, rtol=0.02, atol=0.00005))
+            if "time_segment" in day:
+                breaks |= day.time_segment.ne(day.time_segment.shift())
             groups = breaks.cumsum()
             bouts, processed_samples = [], 0
             for _, segment in day.loc[day.wear.astype(bool)].groupby(groups):
@@ -49,10 +52,18 @@ def run_daily_gait(df, *, subject, cohort, sensor_height_m, save_folder, process
                 processed_samples += len(segment)
                 data = segment.reset_index().copy()
                 data["timestamp"] = (segment.index - segment.index[0]).total_seconds()
+                height_kwargs = {"participant_height_m": participant_height_m} if participant_height_m is not None else {}
                 result = processor(data, cohort=cohort, sensor_height_m=sensor_height_m,
-                                   measurement_condition="free_living")
+                                   measurement_condition="free_living", **height_kwargs)
                 if result is None:
                     raise ValueError("Gait processor returned no result for an eligible segment.")
+                orientation = result.get("orientation")
+                if orientation is not None and not orientation.empty:
+                    orientation = orientation.copy()
+                    orientation["start_time"] = segment.index[orientation.start.to_numpy(dtype=int)]
+                    orientation["end_time"] = segment.index[orientation.end.to_numpy(dtype=int)-1] + pd.Timedelta(milliseconds=10)
+                    orientation["day"] = day_number
+                    orientations.append(orientation)
                 wb = result.get("per_wb_params")
                 if wb is None or wb.empty:
                     continue
@@ -70,7 +81,8 @@ def run_daily_gait(df, *, subject, cohort, sensor_height_m, save_folder, process
                 bouts.append(wb)
             combined = pd.concat(bouts, ignore_index=True) if bouts else pd.DataFrame(columns=WB_COLUMNS + ["step_count"]).astype(float)
             combined.index.name = "wb_id"
-            summary = aggregate_bouts(combined.drop(columns="step_count"), cohort=cohort, sensor_height_m=sensor_height_m)
+            summary = aggregate_bouts(combined.drop(columns="step_count"), cohort=cohort,
+                                      sensor_height_m=sensor_height_m, participant_height_m=participant_height_m)
             summary["step_count"] = combined.step_count.sum()
             status = "completed" if processed_samples else "insufficient_continuous_wear"
             if not processed_samples:
@@ -90,6 +102,9 @@ def run_daily_gait(df, *, subject, cohort, sensor_height_m, save_folder, process
         wb_table.to_csv(paths["per_wb"], index=False)
         day_table.to_csv(paths["day_aggregation"], index=False)
         pd.DataFrame(dated_bouts, columns=["start", "end", "day"]).to_csv(paths["walking_bouts_datetime"], index=False)
+        orientation_table = (pd.concat(orientations, ignore_index=True) if orientations else
+                             pd.DataFrame(columns=["gs_id", "start_time", "end_time", "day", "status", "rotation_deg"]))
+        orientation_table.to_csv(paths["orientation_qc"], index=False)
     except Exception as exc:
         for name, path in paths.items():
             if name != "gait_status":

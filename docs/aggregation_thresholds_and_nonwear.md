@@ -63,6 +63,27 @@ without eligible wear has undefined amounts and
 `unprocessed_wear_seconds` for wear fragments shorter than the segment minimum.
 That field is diagnostic and is excluded from participant feature averages.
 
+The production lower-back runner applies only binary belt inversion, using
+walking during continuous wear as evidence. A confirmed inversion reverses
+vertical and ML for both ACC and gyro and preserves PA; no tilt alignment is
+applied. Gait and lying consume the same corrected signals. The belt must
+preserve the face toward the body. Walking detection uses acceleration norm,
+which is invariant to this rotation. Uncertain/conflicting episodes retain
+their input axes and explicit recording-level orientation QC. TIB exports
+include uncertain orientation coverage and a review flag without altering the
+existing TIB-valid criteria. Experimental per-sequence tilt alignment requires
+an explicit API option and is disabled in production.
+
+`step_count` and `n_raw_initial_contacts` count distinct detected contacts between
+the endpoint contacts of each assembled walking bout, including both endpoints;
+they are no longer counts of retained stride rows. `n_strides` retains that
+separate quantity. `n_turns` counts turns whose midpoint belongs to the bout's
+half-open interval. Count fields are populated from events, not averaged from
+missing stride columns. DMO plausibility thresholds use total participant
+height; sensor height is used only for stride length. Direct integrations can
+pass `participant_height_m`; omitting it disables the additional height-based
+threshold rather than substituting sensor height.
+
 Aggregation then separates features into two groups:
 
 - Amount features: `total_walking_duration_min`, `step_count`, and `wb_*__count` / `wb_*__sum` features. These are averaged only over valid days.
@@ -193,15 +214,36 @@ DETACH defaults:
 
 ### Lower-Back Nonwear
 
-Lower-back preprocessing uses a Van Hees / GGIR-like 2013 nonwear detector by default.
+Lower-back preprocessing uses the Python port of the GGIR 2023 matched-threshold
+detector, with the protocol adaptations below. The historical 2013 implementation
+is available explicitly through `method = "current"`.
 
-Defaults:
+Compatibility API defaults (the Ravenna example retains this nonwear profile):
 
 - 15-minute medium epochs.
-- 60-minute long windows centered on each medium epoch.
+- 60-minute forward windows starting at each 15-minute epoch.
 - An axis counts as nonwear when both acceleration range `< 50 mg` and standard deviation `< 13 mg`.
 - At least `2` axes are required.
-- GGIR-style edge correction and short-wear-gap relabeling are applied.
+- Generic GGIR wear-gap filling and start-edge correction are applied.
+- Recording-end extension and the special final-24-hour download rule are disabled;
+  the seven-day protocol/cap does not establish sensor removal.
+- With respiration enabled, positive gyro windows (60 s, 50% overlap, strict
+  10–30 brpm, any positive axis, all hours) reassign overlapping nonwear to wear.
+- The respiration production configuration then reassigns residual bouts shorter
+  than 15 minutes as wear; exactly 15 minutes is retained. Gaps remain time-invalid.
+
+The reviewed **GP T0 production profile** in `configs/lower_back.example.toml`
+and `configs/lower_back_t0_inversion.example.toml` changes the forward window to
+30 minutes, decision step to one minute and gyro window to 30 seconds with
+15-second steps. It retains SD/range thresholds, at least two axes, GGIR's
+continuity rules and the final 15-minute minimum. GGIR gap-duration thresholds
+remain physical hours when changing the decision grid. Its `protocol_hours = 168`
+uses elapsed recording time and analysis restarts at every raw timestamp gap,
+including gaps in recordings that did not require anchor recovery. Existing
+private configurations remain unchanged until the profile is enabled explicitly.
+The multi-visit `configs/lower_back_selected_full.example.toml` also declares
+these processing parameters, but the completed cohort validation covers T0.
+See [the benchmark and promotion notes](lower_back_validation.md) for limitations.
 
 The resulting nonwear bouts are converted into a boolean `wear` mask. Gait processing uses that mask to exclude nonwear and separate wear segments. Aggregation uses `nonwear_time_minutes` and `valid_hours`; it does not fill lower-back nonwear values.
 

@@ -29,6 +29,26 @@ The exact historical revisions used for these adaptations were not recorded in
 the supplied source. The review date is 2026-10-06; the upstream commit above
 identifies the inspected reference, not a claimed original import revision.
 
+## GGIR Python port
+
+The lower-back `ggir_2023_matched` profile in
+`src/dare_wearables/lower_back/nonwear/ggir2023.py` is a Python translation of
+`detect_nonwear_clipping.R` and `g.weardec.R` from
+[GGIR 3.3-9, commit 5acd50f9283e02fe0efc98057978dc8e9d5629ab](https://github.com/cran/GGIR/tree/5acd50f9283e02fe0efc98057978dc8e9d5629ab).
+GGIR authors include Vincent T van Hees and Jairo H Migueles. Upstream lists
+Medical Research Council UK, Accelting, and French National Research Agency as
+copyright holders. The Apache License 2.0 is retained in
+`licenses/GGIR-LICENSE.txt`. Local changes translate the fixed matched-threshold
+2023 profile to NumPy and map decisions to exact input timestamps; clipping is
+separate from the nonwear mask. Compatibility defaults use a 60-minute forward window with
+a 15-minute step; the reviewed GP T0 profile uses 30-minute windows with a
+one-minute step and a 30-second gyro override. Both profiles disable the terminal extension and special final-24-hour
+download assumption. The historical 60-minute/end-corrected profile is available
+explicitly for upstream-equivalence validation. Generic gap filling and start-edge
+correction retain the translated upstream logic. The
+optional validation/comparison scripts execute the original R files from a
+checksum-verified external cache. Production does not require R or downloads.
+
 ## Runtime dependencies and methods
 
 Runtime packages are installed separately under their respective licenses.

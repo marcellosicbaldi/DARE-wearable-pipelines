@@ -1,5 +1,40 @@
 # Changelog
 
+## Unreleased
+
+- Honor the configured elapsed protocol limit in serial and parallel nonwear
+  assessments. Include it in nonwear provenance and completion signatures;
+  retain the historical sample cap when the elapsed limit is omitted.
+- Move macOS CI to the supported Apple Silicon `macos-15` runner after the
+  retirement of `macos-14`.
+- Declare the reviewed GP T0 profile in the standard GP example, with explicit
+  timestamp recovery and inversion-only options. Retain compatibility API
+  defaults and the Ravenna nonwear example; existing private TOML files require
+  explicit activation. Document the fixed benchmark and its false-positive cost.
+- Add a configurable joint wear report from saved McRoberts/Empatica intervals,
+  with shared 168-hour windows, exact overlap, censoring QC and input hashes.
+- Remove study-specific identifiers and recording dates from public research
+  examples and reference-correction tooling. Keep corrections in private inputs.
+- Correct gait step/turn counts and use participant height for DMO plausibility
+  thresholds while retaining sensor height for stride-length calculation.
+- Add the pinned Python GGIR 2023 implementation, optional gyro wear override,
+  conservative timestamp-anchor quarantine, annotation UI and comparison tools.
+
+- Add a T0-only full GP run profile with the selected nonwear algorithm and
+  shared binary belt-inversion correction for gait and lying/TIB. Reverse
+  vertical/ML in both triads while preserving PA; disable gait tilt alignment
+  by default. Export walking-evidence QC and uncertain orientation coverage.
+
+- Add the selected lower-back nonwear profile: 30-minute ACC windows on a
+  one-minute grid, with a 30-second/50%-overlap gyro respiration override and
+  final 15-minute minimum bout duration. Preserve compatibility API settings.
+- Add an explicit elapsed protocol limit and timestamp-gap segmentation for the
+  selected profile, matching the reviewed benchmark's observation window.
+- Add a full GP lower-back batch launcher with frozen inventories, separate
+  output directories, sequential recording workers, per-recording logs,
+  checksum-verified resume and gait/TIB aggregation. Cohort execution remains a
+  user action; preparing the code does not run participant recordings.
+
 ## 0.2.0 — 2026-10-06
 
 - Rename the studies to DARE-FALLSPREDICT GP and DARE-FALLSPREDICT.
