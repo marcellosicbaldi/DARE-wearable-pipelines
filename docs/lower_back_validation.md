@@ -104,8 +104,17 @@ assessment on ten randomly selected recordings. This historical equivalence
 check does not validate the scientific accuracy of the selected adaptation.
 
 The final inversion-only run completed all 197 GP T0 recordings. Its frozen
-source inventory contains 273 Python files. PR preparation preserves those
-processing sources byte for byte; new reporting tools are outside `src/`.
+source inventory contains 273 Python files, all matching PR commit `9453745`
+byte for byte. A subsequent review fix passes `protocol_hours` through serial
+and parallel nonwear-only assessment workers and includes the requested limit
+in nonwear provenance/completion signatures. The full-run launcher already
+passed the elapsed limit correctly; its signal processing is unchanged by this
+fix. Current sources therefore no longer match every historical source hash.
+The completed run and its manifests remain attached to the frozen revision:
+use that snapshot to verify/resume it, and explicitly review the later source
+differences before promoting its results under a newer release. Never rewrite
+the old manifests to claim that they were produced by the newer code.
+
 The cohort's completion status establishes execution, not accuracy. Output
 hashes, environment, metadata and scientific QC must still be checked before
 promoting those outputs.
@@ -146,7 +155,8 @@ Never edit old manifests to relabel their provenance.
 ## Remaining promotion and extraction work
 
 1. Review the PR, pass CI on the final commit, merge and create a versioned release.
-2. Verify the completed run against the released processing sources and environment.
+2. Verify the completed run against its frozen sources and environment, then
+   review any differences from the released code before reusing its outputs.
 3. Use the new gait and combined valid TIB outputs; refresh TIB-dependent wrist
    sleep and any HR/HRV outputs consuming those changed sleep windows.
 4. Assemble an isolated set of approved GP inputs and rebuild the GP overall

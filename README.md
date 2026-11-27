@@ -265,7 +265,12 @@ python scripts/assess_lower_back_nonwear.py configs/lower_back_respiration.local
 ```
 
 The assessment computes nonwear only, without gait, TIB or raw-sample parquet
-exports. Each subject's `nonwear/` folder contains original/evidence/reassigned/
+exports. It honors `lower_back.protocol_hours` in both serial and parallel workers,
+using elapsed time from the first retained sample, including gaps. For the GP T0
+window, set `protocol_hours = 168.0`; omitting it retains the historical sample-count
+cap. The requested limit is recorded in each nonwear summary/provenance and its
+completion signature, so results from a different limit cannot be reused.
+Each subject's `nonwear/` folder contains original/evidence/reassigned/
 final intervals, intervals before the duration filter, separate duration-based
 reassignments, GGIR epoch decisions, respiration-window features, daily counts, parameter/source provenance
 and a completion manifest. Sample intervals are half open; CSV timestamp ends

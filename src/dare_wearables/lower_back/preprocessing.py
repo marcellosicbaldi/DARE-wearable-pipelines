@@ -129,7 +129,8 @@ def preprocess_lowerback_file(
         "last_sample": str(df.datetime.iloc[-1]) if len(df) else None}
     df.attrs["timestamp_quality"] = quality
     time_invalid = invalid_intervals(df, sample_rate_hz, quality)
-    timing = {"timestamp_options": timestamp_options, "timestamp_quality": quality,
+    timing = {"protocol_hours": protocol_hours,
+              "timestamp_options": timestamp_options, "timestamp_quality": quality,
               "time_invalid_intervals": time_invalid}
 
     if df.empty:

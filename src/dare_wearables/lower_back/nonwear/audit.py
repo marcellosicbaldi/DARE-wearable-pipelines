@@ -41,7 +41,7 @@ def output_record(folder, options):
     return OutputRun(folder / "respiration_manifest.json", [folder / name for name in names])
 
 
-def audit_signature(source, options, nonwear=None, timestamps=None):
+def audit_signature(source, options, nonwear=None, timestamps=None, *, protocol_hours=None):
     import scipy
     import polars
     source = Path(source).resolve()
@@ -49,9 +49,12 @@ def audit_signature(source, options, nonwear=None, timestamps=None):
     nonwear = nonwear or NonwearOptions()
     timestamps = timestamps or TimestampOptions()
     timestamps.validate()
-    parameters = {"method": "accelerometer_plus_gyro_respiration_v3", "options": asdict(options),
+    if protocol_hours is not None and (isinstance(protocol_hours, bool) or not np.isfinite(protocol_hours) or not 0 < protocol_hours <= 168):
+        raise ValueError("protocol_hours must be in (0, 168], or None for the historical sample cap.")
+    parameters = {"method": "accelerometer_plus_gyro_respiration_v4", "options": asdict(options),
                   "baseline_detector": detector_provenance(nonwear),
                   "timestamps": asdict(timestamps),
+                  "protocol_hours": protocol_hours,
                   "input": {"path": str(source), "size_bytes": stat.st_size,
                             "mtime_ns": stat.st_mtime_ns},
                   "sources": source_hashes(), "dependencies": {
@@ -95,7 +98,8 @@ def write_audit(prepared, folder, *, source, options):
     result = diagnostics["result"]
     nonwear = prepared.get("nonwear_options", NonwearOptions())
     timestamps = prepared.get("timestamp_options", TimestampOptions())
-    key, provenance = audit_signature(source, options, nonwear, timestamps)
+    protocol_hours = prepared.get("protocol_hours")
+    key, provenance = audit_signature(source, options, nonwear, timestamps, protocol_hours=protocol_hours)
     intervals = prepared.get("time_invalid_intervals", pd.DataFrame(columns=["start", "end", "duration_seconds", "reason"]))
     quality = prepared.get("timestamp_quality", {"policy": timestamps.policy, "events": [], "recording_discontinuities": []})
     write_quality(folder, quality, intervals)
@@ -115,6 +119,7 @@ def write_audit(prepared, folder, *, source, options):
         result.windows.to_parquet(folder / "respiration_windows.parquet", index=False)
     summary = {**diagnostics["summary"], "baseline_method": nonwear.method,
                "baseline_detector": prepared.get("nonwear_provenance", provenance["baseline_detector"]),
+               "protocol_hours": protocol_hours,
                "observed_hours": result.n_samples / result.fs / 3600,
                "sample_rate_hz": result.fs, "n_samples": result.n_samples,
                "start": str(prepared["df"].datetime.iloc[0]) if result.n_samples else None,

@@ -119,13 +119,14 @@ class AssessmentTests(unittest.TestCase):
                                      respiration=RespirationOptions(enabled=True), nonwear=NonwearOptions(method="current"))
             frame_maker = IntegrationTests()
             processed = []
-            def process(item, folder, options, expected_sources, nonwear, timestamps=None):
+            def process(item, folder, options, expected_sources, nonwear, timestamps=None, *, protocol_hours=None):
                 processed.append(item["subject"])
                 if item["subject"] == "900001" and processed.count("900001") == 1:
                     raise ValueError("synthetic failure")
                 frame = frame_maker.frame()
                 diag = override_frame(frame, 100, options)
-                return write_audit({"df": frame, "respiration": diag, "nonwear_options": NonwearOptions(method="current")}, folder,
+                return write_audit({"df": frame, "respiration": diag, "nonwear_options": NonwearOptions(method="current"),
+                                    "protocol_hours": protocol_hours}, folder,
                                    source=item["source"], options=options)
             real_process = assessment._process
             with patch.object(assessment, "_process", side_effect=process):

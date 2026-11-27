@@ -229,7 +229,8 @@ def process_record(run, index):
         raise ValueError("Raw recording changed during processing.")
     _required(folder, item, config.save_omx_to_parquet)
     from dare_wearables.lower_back.nonwear.audit import audit_signature, output_record
-    key, _ = audit_signature(item["source"], config.respiration, config.nonwear, config.timestamps)
+    key, _ = audit_signature(item["source"], config.respiration, config.nonwear, config.timestamps,
+                             protocol_hours=config.protocol_hours)
     if not output_record(folder/"nonwear", config.respiration).reusable(key):
         raise ValueError("Nonwear audit completion failed verification.")
     atomic_json(folder/"full_run_complete.json", {"plan_sha256": _digest(run/"run_plan.json"),

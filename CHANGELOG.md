@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Honor the configured elapsed protocol limit in serial and parallel nonwear
+  assessments. Include it in nonwear provenance and completion signatures;
+  retain the historical sample cap when the elapsed limit is omitted.
 - Move macOS CI to the supported Apple Silicon `macos-15` runner after the
   retirement of `macos-14`.
 - Declare the reviewed GP T0 profile in the standard GP example, with explicit

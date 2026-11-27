@@ -44,7 +44,7 @@ def inventory(config):
     return records
 
 
-def _process(item, folder, options, expected_sources, nonwear=None, timestamps=None):
+def _process(item, folder, options, expected_sources, nonwear=None, timestamps=None, *, protocol_hours=None):
     from dare_wearables.lower_back.preprocessing import preprocess_lowerback_file
     started = time.monotonic()
     source = Path(item["source"])
@@ -52,13 +52,14 @@ def _process(item, folder, options, expected_sources, nonwear=None, timestamps=N
         raise ValueError("Processing source changed after the assessment started.")
     nonwear = nonwear or NonwearOptions()
     timestamps = timestamps or TimestampOptions()
-    initial_key, _ = audit_signature(source, options, nonwear, timestamps)
+    initial_key, _ = audit_signature(source, options, nonwear, timestamps, protocol_hours=protocol_hours)
     if signature({}, [source]) != item["identity"]:
         raise ValueError("Input changed since the frozen inventory was created.")
-    prepared = preprocess_lowerback_file(str(source), verbose=False, respiration=options, nonwear=nonwear, timestamps=timestamps)
+    prepared = preprocess_lowerback_file(str(source), verbose=False, respiration=options,
+                                        nonwear=nonwear, timestamps=timestamps, protocol_hours=protocol_hours)
     if signature({}, [source]) != item["identity"]:
         raise ValueError("Input changed during processing.")
-    if audit_signature(source, options, nonwear, timestamps)[0] != initial_key:
+    if audit_signature(source, options, nonwear, timestamps, protocol_hours=protocol_hours)[0] != initial_key:
         raise ValueError("Processing source or environment changed during analysis.")
     summary = write_audit(prepared, folder, source=source, options=options)
     del prepared
@@ -133,7 +134,8 @@ def run_assessment(config, *, resume=None, inventory_only=False, workers=1):
         folder = run / item["subject"] / item["visit"] / item["sensor"] / "nonwear"
         record_state = output_record(folder, config.respiration)
         try:
-            key, _ = audit_signature(source, config.respiration, config.nonwear, config.timestamps)
+            key, _ = audit_signature(source, config.respiration, config.nonwear, config.timestamps,
+                                     protocol_hours=config.protocol_hours)
             reusable = signature({}, [source]) == item["identity"] and record_state.reusable(key)
         except OSError:
             reusable = False
@@ -168,13 +170,15 @@ def run_assessment(config, *, resume=None, inventory_only=False, workers=1):
     if workers == 1:
         for item, folder in pending:
             try:
-                record(item, _process(item, folder, config.respiration, parameters["sources"], config.nonwear, config.timestamps))
+                record(item, _process(item, folder, config.respiration, parameters["sources"],
+                                      config.nonwear, config.timestamps, protocol_hours=config.protocol_hours))
             except Exception as error:
                 record(item, error=error)
     else:
         # spawn avoids inheriting a full raw recording in child processes.
         with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("spawn")) as pool:
-            futures = {pool.submit(_process, item, folder, config.respiration, parameters["sources"], config.nonwear, config.timestamps): item
+            futures = {pool.submit(_process, item, folder, config.respiration, parameters["sources"],
+                                   config.nonwear, config.timestamps, protocol_hours=config.protocol_hours): item
                        for item, folder in pending}
             for future in as_completed(futures):
                 item = futures[future]
