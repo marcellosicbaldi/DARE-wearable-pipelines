@@ -38,8 +38,8 @@ flowchart TD
 ```text
 configs/       Generic example configurations; no private study settings
 docs/          Processing and data-contract documentation
-notebooks/     Four unexecuted entry-point examples
-scripts/       Publication-content checks
+notebooks/     Entry-point examples and lower-back nonwear/respiration experiments
+scripts/       Batch launchers, research comparisons, reporting and publication checks
 src/           Shared core and DARE-FALLSPREDICT GP/DARE-FALLSPREDICT adapters
 tests/         Synthetic regression tests
 ```
@@ -123,6 +123,398 @@ gp-hrv --config configs/hrv.local.toml --participant 900001
 
 Equivalent examples are in `notebooks/`. Keep notebook outputs cleared before
 committing. Inspect participant selection before any batch run.
+
+The reviewed GP T0 profile is explicit in `configs/lower_back.example.toml`.
+For a new isolated cohort run, copy it to the ignored local configuration and
+use the batch launcher:
+
+```bash
+cp configs/lower_back.example.toml configs/lower_back.local.toml
+# Edit private paths before running; --inventory-only does not process signals.
+.venv/bin/python scripts/run_lower_back_dataset.py --config configs/lower_back.local.toml --inventory-only
+```
+
+The default Python API and Ravenna example retain the compatibility nonwear
+settings. Existing private TOML files must explicitly select the reviewed
+profile; merging or upgrading code does not rewrite them. The [validation and
+promotion notes](docs/lower_back_validation.md) describe the benchmark tradeoff,
+source equivalence and dependent extraction steps.
+
+For joint McRoberts/Empatica wear coverage, use
+`scripts/summarize_joint_wear.py` with saved source directories and a new output
+directory. It intersects timestamped intervals on the same 168-hour window;
+see [wear coverage methods and command](docs/joint_wear_coverage.md).
+
+For lower-back nonwear investigation, use
+[`notebooks/compare_lower_back_nonwear.ipynb`](notebooks/compare_lower_back_nonwear.ipynb).
+It compares the legacy Python detector with GGIR 2023 using matched thresholds and
+two or three required axes, with cohort distributions, paired comparisons and
+acceleration/bout plots. Copy `configs/nonwear_comparison.example.toml` to the ignored local copy
+and select participants explicitly. Running the comparison requires `Rscript`
+and downloads checksum-verified GGIR 3.3-9 routines on first use. Results go to
+a new experiment directory; the comparison does not run gait or TIB.
+
+For **manual diary-guided labeling**, launch the independent local app with
+`.venv/bin/python scripts/annotate_lower_back_nonwear.py` after configuring
+`configs/nonwear_annotation.local.toml` from the example. It shows synchronized
+raw ACC/gyro, preserves original diary shading, and lets reviewers drag exact
+boundaries, confirm/reject episodes, or add missed removals and wear examples.
+Save/resume and confirmed-label CSV exports are separate from pipeline results.
+See [annotation instructions](docs/nonwear_annotation.md) or the launcher in
+[`notebooks/nonwear_annotation.ipynb`](notebooks/nonwear_annotation.ipynb).
+
+[`notebooks/respiration.ipynb`](notebooks/respiration.ipynb) explores gyroscope
+respiration-like spectral evidence as a proposed wear override, with 30/60-second
+windows, per-axis spectra and before/after nonwear plots. It reuses saved
+comparison results. The notebook and production runner share the spectral screen.
+
+The lower-back detector implementation is `ggir_2023_matched`: the upstream
+GGIR 2023 approach, using SD <13 mg and range <50 mg with at least two axes.
+Compatibility API defaults use **60-minute forward windows and 15-minute
+decisions**. The reviewed GP T0 configuration selects **30-minute windows and
+one-minute decisions** with the respiration override described below.
+It uses a NumPy port of the routines
+pinned to GGIR 3.3-9 / commit `5acd50f9283e02fe0efc98057978dc8e9d5629ab`,
+including overlapping-window scores and iterative wear-gap filling. Both profiles
+disable GGIR's recording-end extension and special final-24-hour download rule:
+participants are expected to wear the sensor through the seven-day protocol,
+and the analysed seven-day cap is not evidence of sensor removal. Start-edge
+correction is retained. Signal-supported nonwear at the end can still be detected.
+For the reviewed GP T0 grid, the window, step and recording-end policy are
+explicit in configuration and output provenance:
+
+```toml
+[lower_back.nonwear]
+method = "ggir_2023_matched"
+window_seconds = 1800.0
+step_seconds = 60.0
+end_of_recording_correction = false
+```
+
+For the historical upstream-equivalent profile, explicitly use
+`window_seconds = 3600.0`, `step_seconds = 900.0` and
+`end_of_recording_correction = true`. Historical
+60-minute comparisons and saved outputs keep their original interpretation.
+An early four-participant pilot retained the 60/15 profile. The subsequent fixed
+20-participant benchmark selected 30/1 with a 30-second respiration override.
+`configs/lower_back.example.toml` and `configs/lower_back_t0_inversion.example.toml`
+now declare that reviewed GP T0 profile explicitly. Library defaults and the
+Ravenna example retain 60/15 with respiration disabled. The recording-end fix
+is enabled in both profiles. See [the benchmark and validation limits](docs/lower_back_validation.md).
+Clipping is exported separately and excluded from the nonwear mask. Epochs use
+exact sample bounds, including nanosecond timestamps; final partial decision
+epochs remain outside the decisions (one minute or 15 minutes by profile).
+
+**Production requires only Python**: no R process, source downloads or source
+cache. `[lower_back.nonwear].method = "current"` explicitly selects the historical
+Python implementation for reproducibility. The production default is GGIR even
+when the respiration override is disabled. Changing this profile requires a new
+assessment and recomputation of dependent outputs; saved labels are never relabelled
+as if they had used the new settings. Obsolete `rscript` and `source_cache`
+keys in older production TOML files are accepted and ignored.
+
+R is needed only for the optional comparison and equivalence checks. To repeat
+validation against the original pinned R functions on a random sample from a
+previous R-backed, single-visit assessment:
+
+```bash
+python scripts/validate_ggir2023_python.py --assessment /absolute/path/to/r_assessment --output-root /absolute/path/to/validation --count 10 --seed 20261102 --workers 2
+```
+
+The sample is frozen before processing, without replacement, from previously
+completed subjects; reader failures are recorded as ineligible. The check reruns
+R and Python on identical full-rate calibrated acceleration, requires exact
+scores/decisions, sample masks and bout timestamps, and compares respiration
+features and final bouts with the preserved R-backed assessment. Results and a
+report go to a new validation folder. R-dependent synthetic parity tests skip
+when R is unavailable; production integration tests still run.
+
+The lower-back runner supports a configurable **respiration override**. It is
+enabled in the reviewed GP T0 examples and remains disabled in library defaults
+and the Ravenna example. Both profiles use **10 < BR < 30 brpm at all hours**,
+50% overlap and evidence from any gyro axis. The reviewed GP profile uses
+30-second gyro windows; the compatibility screen uses 60-second windows. It uses
+the upstream **GGIR 2023 matched-threshold** baseline, then reassigns only nonwear samples covered
+by positive windows. It never creates nonwear. Gyro must be in degrees/s; no
+temperature input is required. Missing/invalid windows and incomplete tails
+preserve the accelerometer labels. Each complete window is assigned its full
+support, so transitions have window-scale uncertainty.
+
+To inspect the saved cohort results, use **Inspect saved results: raw ACC/gyro
+and nonwear** near the top of `notebooks/respiration.ipynb`. Run its imports and
+two inspection cells; no comparison or spectral analysis is required. Choose a
+participant/visit, then a bout or timestamp range. The upper panel shows raw
+acceleration and the lower panel raw gyro, with final nonwear, respiration-based
+wear reassignments and short-bout reassignments shaded separately. Raw data are
+cached once per recording; both plot limits set to `None` show the full recording.
+
+The respiration example and local assessment configuration also set
+`min_nonwear_bout_seconds = 900.0`. After respiration subtraction and splitting
+at time gaps, this final rule reclassifies residual bouts **shorter than 15 minutes**
+as wear. Bouts of exactly 15 minutes remain nonwear. Duration uses observed sample
+counts; missing time is never filled or used to join bouts. Omitting this option
+(or setting it to zero) reproduces the earlier respiration-only behavior.
+
+For an isolated cohort assessment, copy
+`configs/lower_back_respiration.example.toml` to an ignored local configuration,
+set private paths and select visits/participants. Use a separate output root:
+
+```bash
+python scripts/assess_lower_back_nonwear.py configs/lower_back_respiration.local.toml --inventory-only
+python scripts/assess_lower_back_nonwear.py configs/lower_back_respiration.local.toml --resume /absolute/path/to/assessment_run
+```
+
+The assessment computes nonwear only, without gait, TIB or raw-sample parquet
+exports. Each subject's `nonwear/` folder contains original/evidence/reassigned/
+final intervals, intervals before the duration filter, separate duration-based
+reassignments, GGIR epoch decisions, respiration-window features, daily counts, parameter/source provenance
+and a completion manifest. Sample intervals are half open; CSV timestamp ends
+are exclusive. Resume verifies configuration, source revision, input identity and
+output checksums. Failed recordings are reported while the others continue.
+`cohort_summary.csv` and `cohort_qc.png` support review, including daytime
+reassignments (09:00–21:00 is a reporting interval, never a detection gate).
+Use `--cohort ravenna` for the other adapter. The default is one worker; increase
+`--workers` only with enough RAM for multiple full-rate recordings.
+
+To apply only the final duration rule to existing completed assessments, without
+repeating the raw-signal analysis, use:
+
+```bash
+python scripts/refine_lower_back_nonwear.py /absolute/path/to/original_run /absolute/path/to/recovery_run --output-root /absolute/path/to/new_results --minimum-seconds 900 --expected-recordings 197
+```
+
+This verifies saved interval checksums, includes recovered failures and counts
+matching controls once. A separate derived run contains final and reassigned
+intervals, per-participant summaries, and before/after statistics. Episodes are
+counted once; night is 22:00–08:00, and bouts crossing a day/night boundary are
+assigned to whichever period contains more of their duration. Historical results
+are preserved. This step does not update downstream gait/TIB outputs.
+
+For a downstream rerun, use the normal lower-back CLI with respiration enabled
+and a **new silver root**, then recompute dependent aggregates and any sleep
+outputs that use lower-back TIB. The exported `wear_accelerometer` column preserves
+the original labels, `wear_respiration_override` identifies respiration-based
+reassignments, and `wear_short_nonwear_override` identifies duration-based
+reassignments. The final `wear` is consumed by gait/TIB. The existing TIB-specific lying correction
+remains a separate later step. Review known removals as well as quiet sleep
+when assessing the selected profile's false-positive tradeoff.
+
+### Selected nonwear profile: full GP dataset run
+
+For GP T0 production, the standard `configs/lower_back.example.toml` and the
+explicit **T0-only, inversion-only** profile below select the same processing
+parameters. To retain a separately named configuration, use
+[`configs/lower_back_t0_inversion.example.toml`](configs/lower_back_t0_inversion.example.toml).
+Copy it to `configs/lower_back_t0_inversion.local.toml` and set private paths.
+It selects all numeric participant directories, T0, 168 elapsed hours, the
+winning nonwear profile described below, gait, lying/TIB and nap detection.
+Start a new run with:
+
+```bash
+caffeinate -i env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  .venv/bin/python -u scripts/run_lower_back_dataset.py \
+  --config configs/lower_back_t0_inversion.local.toml
+```
+
+On macOS, `caffeinate` keeps the machine awake while this command runs. Omit it
+on other systems. The thread limits avoid excessive BLAS overhead. The launcher
+prints its unique run directory. Repeat with `--resume /absolute/run_directory`
+to reuse verified completed recordings and retry incomplete/failed ones. Use
+`--inventory-only` with `--config` to prepare settings and file metadata without
+starting participant processing. Resume only the new run, with its frozen code
+and environment; the older interrupted run retains its historical algorithms.
+
+The selected benchmark configuration is available in
+[`configs/lower_back_selected_full.example.toml`](configs/lower_back_selected_full.example.toml).
+It uses 30-minute ACC windows advanced every minute, SD <13 mg and range <50 mg
+on at least two axes, GGIR continuity rules, and a 30-second gyro screen advanced
+every 15 seconds. The respiration band is strictly 10–30 brpm at all hours;
+remaining nonwear shorter than 15 minutes becomes wear. Recording-end extension
+is disabled. The library defaults remain 60/15 minutes until
+the selected profile is explicitly supplied. The standard GP example enables it;
+existing private configurations are not rewritten.
+
+The full-run example selects all numeric GP participant directories and T0/T1,
+enables gait and posture/time-in-bed, disables large sample parquet exports, and
+limits each recording to **168 elapsed hours**, matching the reviewed benchmark.
+All timestamp gaps restart ACC/gyro analysis. Missing samples remain time-invalid;
+benchmark annotations and participant-specific reference corrections are not
+inputs to the cohort pipeline.
+
+Copy the example to `configs/lower_back_selected_full.local.toml` and set the
+absolute bronze, REDCap and new output-root paths. Prepare an inventory first:
+
+```bash
+.venv/bin/python scripts/run_lower_back_dataset.py --config configs/lower_back_selected_full.local.toml --inventory-only
+```
+
+This command reads file metadata, freezes settings/source hashes/dependency
+versions and creates a new `full_run_*` folder. It does not decode sensor data or
+execute the algorithms. Review `recording_inventory.csv`, including missing
+visits, small files and ambiguous multiple-OMX folders. Start that exact run with:
+
+```bash
+.venv/bin/python scripts/run_lower_back_dataset.py --resume "/absolute/path/to/full_run_FOLDER"
+```
+
+Use the same `--resume` command after interruption or failure. Each recording
+runs sequentially in its own Python process; logs stream into `logs/ID_VISIT.log`.
+The launcher continues after individual failures and verifies hashes of **all**
+nonwear, gait and TIB outputs before reusing a completed recording. Changed raw
+inputs, metadata, code or dependency versions require restoring the frozen inputs
+or starting a new run. Failed partial recording outputs are excluded from
+aggregation. A failed run returns a nonzero exit status and is marked
+`completed_with_failures`.
+
+The new run folder contains:
+
+- `run_plan.json`, `run_plan.sha256`, `source_snapshot/`: frozen configuration,
+  input identities, code, versions and Git branch/commit/dirty state.
+- `run_status.json`, `cohort_summary.csv`, `recording_inventory.csv`, `logs/`:
+  completion status, exclusions, nonwear summaries and errors.
+- `silver/ID/VISIT/McRoberts/`: full nonwear/audit, gait, posture and TIB outputs.
+- `aggregation/gait_T0_mean.csv`, `gait_T1_mean.csv`: gait aggregates using the
+  existing >16-hour daily wear rule.
+- `aggregation/lower_back_tib_valid_all.csv`: combined valid TIB intervals with
+  subject/visit columns, suitable as the new `lb_tib_csv_path` for GP wrist sleep.
+
+All outputs stay under the new run folder. Existing production silver, manual
+annotations and historical nonwear assessments are preserved. A source checkout
+can also execute a fresh run directly by omitting `--inventory-only`.
+
+The production runner corrects binary belt inversion once before gait and
+lying, using the same corrected signals for both. It assumes that the belt
+preserves the face toward the body. Identity or a 180-degree rotation about PA
+is applied to both triads: vertical and ML reverse; PA remains unchanged.
+There is **no tilt alignment**, including within gait sequences. The historical
+all-axis reflection is retained only for reproduction of old comparisons.
+
+Orientation evidence comes from acceleration-norm walking detection during
+continuous final wear, split at nonwear, timestamp gaps and processing-segment
+boundaries. Detection is bounded to one-hour chunks. Accepted sequences last
+at least 10 seconds, have plausible/coherent gravity and a vertical component
+of at least cos(45 degrees) in magnitude. A state needs at least three supporting
+sequences, 60 duration-capped evidence seconds and 90% weighted consensus.
+Evidence for both states meeting the same support requirements flags a possible
+unrecognised removal rather than applying the majority state to the episode.
+These are conservative processing rules, not validated accuracy thresholds.
+
+Lying and nonwear never supply orientation evidence. Uncertain episodes keep
+their input axes and are flagged. Nonwear receives the preceding episode's
+state for the existing TIB gap filling; no state carries across a timestamp or
+processing-segment discontinuity. Wear labels are unchanged by orientation.
+`orientation/inversion_episodes.csv`, `walking_evidence.csv` and
+`inversion_summary.json` contain states, evidence, coverage and parameters.
+`cohort_summary.csv` reports inverted and uncertain wear hours. TIB QC adds
+`orientation_uncertain_wear_hours_in_tib` and `orientation_review_required`;
+these flags expose uncertainty without changing existing night-wear validity
+criteria. The explicit `orientation_mode="sequence"` gait API and posture
+tilt helper remain available only for experiments.
+
+Gait `step_count` now counts detected initial contacts within assembled bouts;
+`n_strides` retains the number of accepted stride intervals. Bout turn counts
+use the bout containing each turn's midpoint. Plausibility thresholds receive
+total participant height separately from the sensor height used for stride length.
+
+To compare against a frozen pre-change run without modifying its outputs:
+
+```bash
+.venv/bin/python scripts/compare_lower_back_gait_orientation.py --baseline-run /absolute/path/to/full_run_FOLDER --output-root /absolute/path/to/new_comparison --participant 900001 --participant 900002
+```
+
+The comparison shares frozen preprocessing across four arms: historical gait,
+count/height fixes with historical orientation, no orientation correction, and
+per-sequence rotation. It exports sequence-equality checks, intermediate contacts,
+turns and strides, daily and participant aggregates, and a comparison figure.
+Existing full runs retain their source snapshots; this change requires a new
+full-run plan rather than resuming an old plan from the modified checkout.
+
+Posture mounting correction has a separate experimental comparison:
+
+```bash
+.venv/bin/python scripts/compare_lower_back_posture_orientation.py --gait-comparison /absolute/path/to/completed_gait_comparison --output-root /absolute/path/to/new_posture_comparison --participant 900001 --participant 900002
+```
+
+Its four arms use historical inversion, a proper 180-degree rotation with the
+same historical mask, uncorrected signals, and a stable proper rotation per
+continuous wear episode inferred from walking. Both sensor triads rotate;
+lying windows never provide mounting calibration. The experiment reuses the
+100-Hz preprocessing cache, infers the historical flip mask at 100 Hz, then
+compares on the posture detector's 1-Hz grid. It preserves wear, lying
+thresholds, gap filling and TIB/QC rules, and checks any completed original
+posture outputs for exact reproduction. Outputs include mounting evidence QC,
+lying-label disagreement, nightly boundaries/durations and validity, naps,
+source snapshots and hashes. This experimental tilt comparison is separate
+from the production binary-inversion method.
+
+Walking gravity cannot distinguish mounting tilt from persistent trunk lean.
+Unsupported episodes retain their input frame and explicit QC. The current
+posture detector also estimates one recording-wide upright reference using
+component-wise medians, which do not commute with arbitrary rotations. Mixing
+corrected and unsupported frames can therefore affect other episodes through
+that reference. Review weak evidence and large changes before promoting this
+experimental correction; this comparison does not establish posture accuracy.
+
+For dependent wrist sleep, set `lb_tib_csv_path` to the new combined TIB CSV in a
+separate GP sleep configuration and use a new `output_root`. Recompute sleep
+outputs/aggregates that use `lower_back_tib`, then refresh combined-cohort tables
+using the existing private exclusion policy and minimum-data rules. HR/HRV and
+other analyses must also be refreshed if they consume those updated sleep
+windows. Unrelated sensor preprocessing does not need repeating.
+
+To move the reviewed change into production:
+
+1. Review `run_status.json` and cohort/gait/TIB QC after the user-run batch;
+   resolve failures and account explicitly for skipped recordings.
+2. Commit the reviewed code, tests, example configuration and documentation on
+   `lower-back-nonwear`. Keep local configurations, logs, data and private
+   benchmark outputs out of Git. Uncommitted changes are not isolated by merely
+   switching branches.
+3. Open a pull request to `main` referencing
+   [issue #1](https://github.com/marcellosicbaldi/DARE-wearable-pipelines/issues/1).
+   Include the fixed 20-participant benchmark, selected parameters, synthetic
+   equivalence tests and cohort QC. The issue's original 9–30 brpm description
+   should be distinguished from the selected strict 10–30 brpm setting.
+4. After review and CI pass for the final commit, merge and make a versioned
+   release following [installation/release instructions](docs/installation_and_releases.md).
+   Install that revision in the analysis environment and retain its configuration
+   and run manifest. Reusing a previous cohort run requires matching processing
+   source hashes and dependencies; a Git commit alone is insufficient when the
+   original run recorded local changes.
+5. Activate the selected profile in the production GP configuration and point
+   downstream processing to the reviewed run's `silver/` and `aggregation/`
+   directories. Retain the previous paths for rollback rather than mixing files
+   from different runs. Promote the corresponding dependent sleep/aggregate
+   outputs together. No automatic merge, issue update, or data promotion occurs.
+
+Verified McRoberts rollover-anchor glitches can be quarantined with an explicit
+option; see [timestamp quality and recovery](docs/lower_back_timestamp_quality.md):
+
+```toml
+[lower_back.timestamps]
+policy = "quarantine_bad_anchors"
+```
+
+The library timestamp default remains `strict`; the reviewed GP examples
+explicitly enable recovery. Recovery excludes the short affected spans as
+time-invalid observations, preserves retained timestamps and real recording
+gaps, and exports a QC log. Recovered files use separate processing segments;
+their missing time contributes neither wear nor nonwear. Unrecognized anomalies
+still fail. Validate in a new output root before rerunning dependent outputs.
+
+For recordings rejected with nonincreasing OMX timestamps, the read-only packet
+audit can inspect failed recordings and a reproducible sample of completed
+controls from an assessment:
+
+```bash
+python scripts/inspect_omx_timestamps.py --assessment /absolute/path/to/assessment_run --output-root /absolute/path/to/private_timestamp_audit --controls 10
+```
+
+The audit compares packet-boundary times, counters, header fields and checksums
+around backward jumps. It exports per-stream summaries and packet context;
+outputs contain private recording dates and participant IDs. It neither repairs
+timestamps nor runs downstream processing. Counter resets and forward gaps must
+be assessed separately from temporary bad timestamp anchors.
 
 ## Input and output contracts
 
